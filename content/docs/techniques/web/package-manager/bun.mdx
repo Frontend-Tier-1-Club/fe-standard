@@ -1,8 +1,63 @@
 ---
-title:  Understand Bun 
+title: Understand Bun
 description: Introduction to Bun
 index: true
 ---
 
-Package Manager are essential elements of docs.
-They provide basic functionalities to browse the docs, you can see their usage and customisable options.
+import Table from "@/shared/components/table"
+
+`Bun` is a newer entry in the package management space, designed from the ground up to be a faster,
+more modern alternative to `npm`, `pnpm` and `Yarn`.
+
+<h2>What can Bun do?</h2>
+
+<h4>All-in-one Toolkit </h4>
+
+Bun is more than just a JavaScript runtime. It has become an All-In-One toolkit,
+used from the develop, test, run, and bundle stages when developing JavaScript and TypeScript applications:
+
+1. <b>Package manager </b>
+   <br />
+   Bun is a package manager that can be compared to npm, pnpm, and Yarn. It can be used to install,
+   update, and remove packages from the project. Besides, Bun can also be used to manage the
+   project's dependencies, which are stored in the `package.json` file, but Bun use `bun.lockb` file
+   to store the dependencies' versions.
+
+2. <b>Bundler</b> <br />
+   Bun has also just played the role of a bundler, similar to the role of Vite, Webpack. Bun is
+   written to be compatible with ESBuild and for better performance. It will be able to replace
+   current tools such as: - `esbuid`, `webpack`, `rollup`, `parcel`, `vite`, `snowpack`, etc.
+3. <b>Test runner </b> <br />
+   Bun has a built-in test runner with a Jest-like expect API. It can be used to run tests and
+   generate test reports. Example:
+
+   ```
+    import { describe, it, expect } from "bun:test"
+
+    describe("Simple Test Case", () => {
+    it("should add two numbers correctly", () => {
+        const sum = 1 + 1
+        expect(sum).toBe(2)
+        })
+    })
+   ```
+
+   Create file `bun.test.tsx` and run `bun test` to run the test.
+   The result will be displayed in the console
+
+   {" "}
+
+   <img className="rounder-md" src="/images/sample_bun_test.png" alt="bun-test" />
+
+4. <b>JavaScript runtime </b> <br /> Bun is a JavaScript runtime that can be used to run JavaScript
+   and TypeScript code. It is built on top of JavaScriptCore, which is a high-performance JavaScript
+   engine.
+
+<Table
+  headers={["Feature", "Description"]}
+  data={[
+    { Feature: "Runtime", Description: "JavaScriptCore" },
+    { Feature: "Performance", Description: "Faster execution speed" },
+    { Feature: "Tools", Description: "Built-in popular development tools" }
+  ]}
+/>
