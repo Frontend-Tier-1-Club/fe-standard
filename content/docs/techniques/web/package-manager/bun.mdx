@@ -5,6 +5,21 @@ index: true
 ---
 
 import Table from "@/shared/components/table"
+export const data = [
+  { Feature: "npm compatibility", Bun: "Yes", NodeJs: "Yes" },
+  { Feature: "Node compatibility", Bun: "Yes", NodeJs: "Yes" },
+  { Feature: "Single binary", Bun: "Yes", NodeJs: "No" },
+  { Feature: "Built-in bundler & transpiler", Bun: "Yes", NodeJs: "No" },
+  { Feature: "Native TypeScript support", Bun: "Yes", NodeJs: "No" },
+  { Feature: "Package manifest format", Bun: "package.json", NodeJs: "package.json" },
+  { Feature: "Lockfile format", Bun: "Binary", NodeJs: "JSON" },
+  { Feature: "Native live-reload", Bun: "Yes", NodeJs: "No" },
+  { Feature: "Built-in .env, .toml support", Bun: "Yes", NodeJs: "No" },
+  { Feature: "Top-level Awaits", Bun: "Yes", NodeJs: "Only on ES Modules" },
+  { Feature: "JS Engine", Bun: "JavaScriptCore", NodeJs: "V8" },
+  { Feature: "Language", Bun: "Zig, C++", NodeJs: "C, C++" },
+  { Feature: "License", Bun: "MIT, LGPL2", NodeJs: "MIT" }
+]
 
 `Bun` is a newer entry in the package management space, designed from the ground up to be a faster,
 more modern alternative to `npm`, `pnpm` and `Yarn`.
@@ -51,13 +66,9 @@ used from the develop, test, run, and bundle stages when developing JavaScript a
 
 4. <b>JavaScript runtime </b> <br /> Bun is a JavaScript runtime that can be used to run JavaScript
    and TypeScript code. It is built on top of JavaScriptCore, which is a high-performance JavaScript
-   engine.
+   engine. `Bun` and `NodeJs` are similar in many ways, but there are also some differences.
 
-<Table
-  headers={["Feature", "Description"]}
-  data={[
-    { Feature: "Runtime", Description: "JavaScriptCore" },
-    { Feature: "Performance", Description: "Faster execution speed" },
-    { Feature: "Tools", Description: "Built-in popular development tools" }
-  ]}
-/>
+<Table headers={["Feature", "Bun", "NodeJs"]} data={data} />
+
+<h2>Bun CLI Commands</h2>
+Comming soon...
