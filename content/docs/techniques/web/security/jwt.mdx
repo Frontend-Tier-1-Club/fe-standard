@@ -1,0 +1,193 @@
+---
+title: JSON Web Tokens Security (JWT)
+description: Display file structure in your documentation
+preview: "JSON Web Tokens Security (JWT)"
+---
+
+# JSON Web Tokens (JWT) Security
+
+JSON Web Tokens (JWT) are a widely used standard for securely transmitting information between parties as a JSON object.
+This document outlines JWT's security features, potential vulnerabilities, and best practices for secure implementation.
+
+## What is a JWT Token ?
+
+JSON Web Tokens (JWTs) are a compact and self-contained method for transmitting information between parties. A JWT consists of three parts: a header, a payload, and a signature. The header and payload are Base64Url encoded JSON strings, and the signature is a cryptographic hash of the header, payload, and a secret key.
+
+The header contains metadata about the JWT, such as the algorithm used to sign the token. The
+payload contains claims, which are statements about an entity and additional data. Claims can be
+used to represent user information, permissions, or other metadata. The signature is used to verify
+that the JWT is valid and has not been tampered with.
+
+## Structure of a JWT
+
+A JWT is divided into three parts, separated by dots (`.`):
+
+1. **Header**: Contains metadata, such as the type of token and the signing algorithm (e.g., `HS256` or `RS256`).
+2. **Payload**: Contains claims, which are statements about an entity (typically the user) and additional data.
+3. **Signature**: Ensures the integrity of the token by allowing verification of its authenticity.
+
+Example:
+
+```text
+<base64UrlEncode(header)>.<base64UrlEncode(payload)>.<signature>
+```
+
+---
+
+### 1. Header
+
+The header contains metadata about the token, including the type of token and the signing algorithm used. It is a JSON object encoded in Base64Url format. This metadata is crucial for both the sender and the recipient to understand how to process the token. For example:
+
+```json
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+```
+
+- **`alg`**: Specifies the algorithm used to sign the token. Common algorithms include:
+
+  - `HS256` (HMAC using SHA-256): Symmetric key algorithm. Both parties share a secret key for signing and verification. Easy to implement but requires secure key management.
+  - `RS256` (RSA signature with SHA-256): Asymmetric key algorithm using a private key for signing and a public key for verification. Ideal for distributed systems as only the private key must remain secure.
+  - `ES256` (ECDSA using P-256 and SHA-256): Asymmetric key algorithm based on elliptic curves. Offers similar security to RSA but with smaller key sizes and faster performance.
+  - `PS256` (RSA-PSS using SHA-256): An advanced variant of RSA with a probabilistic signature scheme, providing stronger cryptographic assurances against certain types of attacks.
+  - `EdDSA` (Edwards-curve Digital Signature Algorithm): A highly secure and performant algorithm, often used with Ed25519.
+
+- **`typ`**: Indicates the type of token. Usually set to `JWT` to denote a JSON Web Token.
+
+The `alg` and `typ` fields in the header provide critical information for validating the token’s signature and ensuring proper cryptographic handling. Misconfiguration or unsupported algorithms can introduce vulnerabilities, so these fields must be validated rigorously.
+
+### 2. Payload
+
+The payload contains the claims, which are statements about the entity (user) and additional data. Example:
+
+```json
+{
+  "sub": "1234567890",
+  "email": "kevin.tran@techvify.com.vn",
+  "name": "Kevin Tran",
+  "role": "ADMIN",
+  "iat": 1516239022,
+  "exp": 1516245022
+}
+```
+
+- **Registered Claims**: Predefined claims that provide useful, standardized metadata:
+
+  - `iss` (Issuer): Identifies the entity that issued the token.
+  - `sub` (Subject): Identifies the principal subject of the token.
+  - `aud` (Audience): Identifies the recipients that the token is intended for.
+  - `exp` (Expiration Time): Specifies when the token will expire.
+  - `nbf` (Not Before): Specifies the time before which the token must not be accepted.
+  - `iat` (Issued At): Identifies the time at which the token was issued.
+  - `jti` (JWT ID): A unique identifier for the token, useful for preventing replay attacks.
+
+- **Custom Claims**: Application-specific data. For example, `role` or `permissions`. Avoid including sensitive information here as the payload is not encrypted.
+
+### 3. Signature
+
+The signature is created by encoding the header and payload, then signing it using a secret key or a private key, depending on the algorithm. The signature ensures the token's integrity and authenticity. For example:
+
+```
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret
+)
+```
+
+- **Symmetric Algorithms (e.g., HS256)**: Use the same key for signing and verification. Both the sender and receiver must securely share the key.
+- **Asymmetric Algorithms (e.g., RS256, ES256)**: Use a private key for signing and a public key for verification. Only the issuer needs to keep the private key secure.
+
+## Private-Public Key (Keypair)
+
+- explanation about private-public key
+
+## How to Work With JWT ?
+
+- explanation JWT workflow
+- draw map authentication with JWT
+
+## Real-world applications of JSON Web Tokens
+
+In the modern web, you will often have several parties communicating with each other. Certain features will naturally be restricted and require some sort of authorization mechanism.
+
+**Authentication**
+
+1. Stateless authentication for web and mobile applications.
+
+- Example Real-world: <br/>
+  E-commerce Platform with Web and Mobile Apps
+
+  Scenario:
+  An e-commerce platform has a web app and a mobile app.
+  Users log in to their accounts to manage orders, browse products, and make purchases.
+  Implementation:
+
+  Login Flow:
+
+  The user logs in via the web or mobile app.
+  The authentication server validates the credentials and issues a JWT containing user claims (e.g., user ID, roles, and permissions).
+  Client-Side Storage:
+
+  Web App: Stores the JWT in an HTTP-only cookie or localStorage.
+  Mobile App: Stores the JWT securely using libraries like SecureStorage or Keychain.
+  Subsequent Requests:
+
+  The client app includes the JWT in the Authorization header (Bearer **token**).
+  The server verifies the token on every request by checking the signature and expiration date.
+  If valid, the server processes the request without querying a session store.
+  Benefits:
+
+  Scalable: Multiple backend servers can independently verify tokens without sharing session data.
+  Fast: Eliminates the need for database lookups for session validation.
+  Example:
+
+  Amazon or Flipkart mobile and web applications use JWTs to authenticate user actions like adding items to the cart or checking order history.
+  Implementation in Single Sign-On (SSO) systems.
+
+Authorization
+Secure API endpoints by validating access rights in the token payload.
+Role-based and permission-based access control.
+
+Data Exchange
+Efficient data sharing between services in a secure and tamper-proof manner.
+Use in microservices and serverless architectures.
+
+Session Management
+Simplifies maintaining sessions in distributed systems.
+Eliminates the need for server-side session storage.
+
+Third-party Integrations
+Facilitates secure interactions with third-party services or APIs.
+Common in OAuth2 flows.
+
+## Challenges and Limitations of JWT
+
+Token Size
+Larger than traditional session IDs, impacting bandwidth.
+Revocation Complexity
+Statelessness makes revoking tokens harder.
+Expiration and Rotation
+Properly managing token lifecycles is critical.
+Security Risks
+Poor implementation can lead to vulnerabilities (e.g., improper validation, weak secret keys).
+Compatibility
+May not be the best fit for every system (e.g., legacy systems relying on server-side sessions).
+
+## JWT and Session ?
+
+- Compare JWT and Session (with table)
+
+## JWT Security Best Practices
+
+1. Use Strong Secret Keys
+2. Choose Appropriate Signing Algorithm
+3. Set Token Expiration (exp claim)
+4. Use HTTPS
+5. Validate Tokens on Every Request
+6. Limit Scope of Tokens
+7. Avoid Storing JWT in LocalStorage
+
+## Conclusion
+
+JWTs are a powerful tool for authentication and secure data exchange. However, they must be implemented with care to avoid common pitfalls. Following best practices ensures that your application remains secure while leveraging the benefits of JWTs.
