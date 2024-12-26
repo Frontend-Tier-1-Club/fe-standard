@@ -6,23 +6,43 @@ index: true
 
 import Table from "@/shared/components/table"
 export const data = [
-  { Feature: "npm compatibility", Bun: "Yes", NodeJs: "Yes" },
-  { Feature: "Node compatibility", Bun: "Yes", NodeJs: "Yes" },
-  { Feature: "Single binary", Bun: "Yes", NodeJs: "No" },
-  { Feature: "Built-in bundler & transpiler", Bun: "Yes", NodeJs: "No" },
-  { Feature: "Native TypeScript support", Bun: "Yes", NodeJs: "No" },
-  { Feature: "Package manifest format", Bun: "package.json", NodeJs: "package.json" },
-  { Feature: "Lockfile format", Bun: "Binary", NodeJs: "JSON" },
-  { Feature: "Native live-reload", Bun: "Yes", NodeJs: "No" },
-  { Feature: "Built-in .env, .toml support", Bun: "Yes", NodeJs: "No" },
-  { Feature: "Top-level Awaits", Bun: "Yes", NodeJs: "Only on ES Modules" },
-  { Feature: "JS Engine", Bun: "JavaScriptCore", NodeJs: "V8" },
-  { Feature: "Language", Bun: "Zig, C++", NodeJs: "C, C++" },
-  { Feature: "License", Bun: "MIT, LGPL2", NodeJs: "MIT" }
+   { Feature: "npm compatibility", Bun: "Yes", NodeJs: "Yes" },
+   { Feature: "Node compatibility", Bun: "Yes", NodeJs: "Yes" },
+   { Feature: "Single binary", Bun: "Yes", NodeJs: "No" },
+   { Feature: "Built-in bundler & transpiler", Bun: "Yes", NodeJs: "No" },
+   { Feature: "Native TypeScript support", Bun: "Yes", NodeJs: "No" },
+   { Feature: "Package manifest format", Bun: "package.json", NodeJs: "package.json" },
+   { Feature: "Lockfile format", Bun: "Binary", NodeJs: "JSON" },
+   { Feature: "Native live-reload", Bun: "Yes", NodeJs: "No" },
+   { Feature: "Built-in .env, .toml support", Bun: "Yes", NodeJs: "No" },
+   { Feature: "Top-level Awaits", Bun: "Yes", NodeJs: "Only on ES Modules" },
+   { Feature: "JS Engine", Bun: "JavaScriptCore", NodeJs: "V8" },
+   { Feature: "Language", Bun: "Zig, C++", NodeJs: "C, C++" },
+   { Feature: "License", Bun: "MIT, LGPL2", NodeJs: "MIT" }
 ]
 
 `Bun` is a newer entry in the package management space, designed from the ground up to be a faster,
 more modern alternative to `npm`, `pnpm` and `Yarn`.
+
+<h2>Why did you need to care to bun?</h2>
+1. <h4>Speed</h4> 
+<b>Super-fast package management</b>: Bun is significantly faster than other package
+managers like npm and Yarn, thanks to its native implementation in Zig and a focus on performance. 
+`Bun` aims to reduce cold start times for scripts and servers compared to Node.js. 
+2. <h4>Modern APIs</h4>
+<b>Web standard APIs</b>: Bun implements modern web standards like fetch, WebSocket, and others
+directly, reducing reliance on polyfills or external packages. 
+3. <h4>Native TypeScript Support</h4> 
+Bun supports TypeScript out of the box without requiring additional setup or configuration. This makes
+it appealing if you're using TypeScript in your projects. 
+4. <h4>Cross-Compatibility</h4> 
+Bun is designed to
+be compatible with Node.js, allowing you to use existing Node.js modules and tools without
+modification. Seamless integration: Migrating from other tools like npm or Yarn to Bun is
+straightforward 
+5. <h4>Lightweight and Resource-Efficient</h4> 
+Bun is designed to be lightweight and
+resource-efficient, making it suitable for small and large projects alike.
 
 <h2>What can Bun do?</h2>
 
@@ -42,6 +62,37 @@ used from the develop, test, run, and bundle stages when developing JavaScript a
    Bun has also just played the role of a bundler, similar to the role of Vite, Webpack. Bun is
    written to be compatible with ESBuild and for better performance. It will be able to replace
    current tools such as: - `esbuid`, `webpack`, `rollup`, `parcel`, `vite`, `snowpack`, etc.
+
+   <h4>Example</h4>
+    Define a components in examples folder like `Component.tsx`
+    ```
+    export function Component(props: {message: string}) {
+        return <h2>{props.message}</h2>
+    }
+    ```
+    Define a main file in examples folder like `index.tsx`
+    ```
+    import * as ReactDOM from "react-dom/client"
+    import { Component } from "./Component"
+
+    const root = ReactDOM.createRoot(document.getElementById("root")!)
+    root.render(<Component message="FE tier 1!" />)
+    ```
+    Run bun build to build the project
+    ```
+    bun build examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+    ```
+
+    The result will be displayed in the `out` folder
+    <img className="rounder-md" src="/images/bun_bundle_example.png" alt="bun-build" />
+    
+    <h4>Options</h4>
+    `entrypoint` is the main file that Bun will use to build the project.<br />
+    `outdir` is the folder that Bun will use to store the built project.<br />
+    `format` is the format of the built project. Bun defaults to "esm", and provides experimental support for "cjs" and "iife".
+      
+
+
 3. <b>Test runner </b> <br />
    Bun has a built-in test runner with a Jest-like expect API. It can be used to run tests and
    generate test reports. Example:
@@ -68,7 +119,57 @@ used from the develop, test, run, and bundle stages when developing JavaScript a
    and TypeScript code. It is built on top of JavaScriptCore, which is a high-performance JavaScript
    engine. `Bun` and `NodeJs` are similar in many ways, but there are also some differences.
 
+   <h4> File types </h4>
+   Bun supports the following file types:
+   - `.tsx`, `.ts`, `.jsx`, `.js`
+   - Bun supports .jsx and .tsx files out of the box. Bun's internal transpiler converts JSX syntax into vanilla JavaScript before execution.
+   <h4> Environment variables </h4>
+   - Bun supports environment variables, which are stored in the `.env` file.
+   - The current environment variables can be accessed via `process.env`
+   - `Bun` also exposes these variables via Bun.env and import.meta.env, which is a simple alias of `process.env`.
+
+   ```
+   Bun.env.API_TOKEN; // => "secret"
+   import.meta.env.API_TOKEN; // => "secret"
+   ```
+
+   <h4>Cross-compile to other platforms </h4>
+      Bun can cross-compile to other platforms like `wasm`, `wasi`, `nodejs`, `deno`, `browser`, `electron`, `react-native`, `node-ts`, `bun-ts`, `bun-wasm`, `bun-wasi`, `bun-nodejs`, `bun-deno`, `bun-browser`, `bun-electron`, `bun-react-native`, `bun-node-ts`, `bun-bun-ts`, `bun-bun-wasm`, `bun-bun-wasi`, `bun-bun-nodejs`, `bun-bun-deno`, `bun-bun-browser`
+      The --target flag lets you compile your standalone executable for a different operating system, architecture, or version of Bun than the machine you're running bun build on.
+   To build for Linux x64 (most servers):
+   ```
+   bun build --target=bun-linux-x64 examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+    
+    bun build --target=bun-linux-x64-modern examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+
+   ```
+
+   To build for Windows x64:
+   ```
+   bun build --target=bun-windows-x64 examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+
+   bun build --target=bun-windows-x64-modern examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+   ```
+   
+   To build for macOS x64:
+   ```
+   bun build --target=bun-darwin-arm64 examples/javascript/package-manager/bun/index.tsx --outdir examples/javascript/package-manager/bun/out
+
+   ```
+  <h4>Bun vs NodeJs</h4>
+
 <Table headers={["Feature", "Bun", "NodeJs"]} data={data} />
 
-<h2>Bun CLI Commands</h2>
-Comming soon...
+<h2>Bun Limitations</h2>
+
+1.  Bun is designed to be compatible with Node.js, but it may not support all Node.js modules or features.
+2.  Since Bun is still new, the community and documentation are not as extensive as Nodejs.
+
+<h2>More about Bun</h2>
+
+- [Bun Documentation](https://bun.sh/docs)
+- [Bun Github](https://github.com/oven-sh/bun)
+- [Bun Blog](https://bun.sh/blog)
+- [Bun Community](https://bun.sh/community)
+
+
