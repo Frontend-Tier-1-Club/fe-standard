@@ -1,0 +1,50 @@
+---
+title: Cross-site Request Forgery (CSRF)
+description: Understand CSRF attack and how to prevent it.
+preview: "CSRF"
+---
+
+## What is Cross-site Request Forgery (CSRF) ?
+
+<b>CSRF</b> is a type of web vulnerability that allows the attackers to trick user into performing
+unwanted actions on a web application where they are authenticated.
+
+The attackers can create links that resemble familiar applications, such as "faceebook.com" instead of "facebook.com".
+Clicking on these links can unknowingly send requests to the Facebook server, potentially leading to unwanted consequences for your account.
+
+## How dangerous are CSRF attacks ?
+
+<b>Transferring funds or Making purchases:</b>
+Attackers could initiate unauthorized money transfers from your bank account or make purchases on.
+your behalf from online stores.
+
+<b>Posting unwanted content:</b>
+Attackers could post messages or content on your social media accounts or other online platforms.
+
+<b>Modifying sensitive data:</b>
+Attackers could change your account settings, passwords or other personal information.
+
+The cost can be significant depends on the attackers skills.
+
+## How to property prevent CSRF attacks ?
+
+There are severals methods to prevent <b>CSRF</b> attacks:
+
+<b>Use Anti-CSRF Tokens:</b>
+This is the most common and effective method to prevent a <b>CSRF</b> attack. Each form submission
+includes a unique, unpredictable token that the server verifies. When a CSRF token is generated it
+should be stored server-side within the user's session data. When a subsequent request is received
+that requires validation, the server-side application should verify that the request includes a
+token which matches the value that was stored in the user's session.
+
+In the form on client-side should have a hidden field that holds the value of the token that generated on server-side:
+`<input type="hidden" name="csrf-token" value="aTokenThatGeneratedOnServer" />`.
+
+<b>SameSite Cookie Attribute:</b>
+This attribute helps the browser decide whether to send cookies along with cross-site requests. The
+values of this attribute are `Lax`, `Strict` or `None`. The `Strict` value will prevent the cookie
+from being sent by the browser to the target site in all cross-site browsing context, even when
+following a regular link. This attribute should not replace a CSRF Token. It should co-exist with
+the token to protect the user like a second layer of defense.
+
+<b>Check the Origin and Referrer Headers:</b>
