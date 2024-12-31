@@ -160,6 +160,14 @@ used from the develop, test, run, and bundle stages when developing JavaScript a
 
 <Table headers={["Feature", "Bun", "NodeJs"]} data={data} />
 
+<h2>Bun CLI commands</h2>
+- `bun init`: Create a new `package.json` file
+- `bun install`: Install all dependencies
+- `bun install <package-name>`: Install a specific package
+- `bun add <package-name>`: Download a particular version of a package and add to the list of dependencies in package.json
+- `bun remove <package-name>`: Remove a package from the list of dependencies in `package.json`
+- `bun update`: Update all packages to the latest version
+
 <h2>Bun Limitations</h2>
 
 1.  Bun is designed to be compatible with Node.js, but it may not support all Node.js modules or features.

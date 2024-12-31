@@ -4,5 +4,135 @@ description: Introduction to PNPM
 index: true
 ---
 
-Package Manager are essential elements of docs.
-They provide basic functionalities to browse the docs, you can see their usage and customisable options.
+## What is pnpm?
+
+`pnpm` is a drop-in replacement for `npm`. It is built on top of `npm` and is much faster and more efficient than its predecessor.
+It is highly disk efficient and solves inherent issues in `npm` like disk space usage, network bandwidth, and installation speed.
+
+## Why did you need to care to pnpm?
+
+`pnpm` provides many advantages over npm and yarn. Some of the core features include:
+
+1. **Disk Space Efficiency**: <br />`pnpm` uses a single storage for all projects on a machine, which means that it doesn't duplicate the same packages across different projects. This results in significant disk space savings.
+   \*Example: <br />
+   If a package version 1 has 500 files and version 2 has just one more file, then `pnpm` will not write 501 files for version 2;
+   instead, it will create a hard link to the original 500 files and write just the new file.
+   If you compare it with npm, then version 2 will also be loaded with duplicating the original 500 files. For large monorepo projects, it can make a big difference. Image a scenario where a package is needed by hundreds of other packages that will be killing your disk space unless you use `pnpm`
+
+2. **Improved speed**: <br />
+   The speed of package installation with `pnpm` is significantly better than `npm` and `yarn`.
+   If you look at the below benchmark tests, you can see that pnpm performs better in most cases thano `npm` and `yarn`
+
+3. **Security**: <br />
+   `Pnpm`, like `yarn`, has a special file with the checksum of all the installed packages. This ensures the integrity of all the installed packages before their code is executed.
+
+   In terms of unprivileged access, `pnpm` also outperforms `npm` and `yarn`. In the case of `npm`
+   and `yarn`, If package A depends on package B, and B depends on C, then A implicitly gets access
+   to C even though A has not declared C as its dependency. This problem is intensified in a large
+   monorepo setup. Pnpm, on the other hand, uses a different dependency resolution algorithm and
+   different folder structure of node_modules that prevents illegal access to packages. \*Noted: <br />
+   `pnpm` has excellent support for monorepo and offline mode.
+
+## pnpm CLI commands
+
+Here are some of the basic commands: <br />
+
+- `pnpm init`: Create a new `package.json` file
+- `pnpm install`: Install all dependencies
+- `pnpm install <package-name>`: Install a specific package
+- `pnpm add <package-name>`: Download a particular version of a package and add to the list of dependencies in package.json
+- `pnpm remove <package-name>`: Remove a package from the list of dependencies in `package.json`
+- `pnpm update`: Update all packages to the latest version
+
+* `pnpm install` vs `pnpm add`:
+  - `pnpm install` is used to install all dependencies listed in the `package.json` file.
+  - `pnpm add` is used to install a specific package and add it to the list of dependencies in the `package.json` file.
+
+## Why Choose pnpm for Monorepos?
+
+`pnpm` is a great choice for monorepos because `pnpm` stands out for its unique approach to handling `node_modules`,
+creating a single version of each package and hard-linking them across projects.
+This results in significant disk space savings and faster installations.
+
+Example: <br />
+Using `pnpm` and `vite` to a monorepos source code strucure like below:
+
+<img src="/images/pnpm_monorepos_structure.png" alt="pnpm-monorepos" />
+
+In `pnpm-workspace.yaml` file, you can define the workspace and the packages that are part of the workspace.
+
+```
+packages:
+  - 'website'
+  - 'packages/*'
+
+```
+
+CD to `website folder` to run `pnpm install` to install all dependencies for the website package.
+It will detect the workspaces and create a pnpm-lock.yaml in the root directory. In the lock file, dependencies are written under the package name website.
+
+In packages/utils
+
+- Create a `package.json` folder
+
+```
+{
+  "name": "@mono/utils",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "scripts": {
+    ...
+  }
+}
+```
+
+The package has been renamed with @mono/utils and set the main file path.
+
+<br />
+In packages/ui folder
+- Using `vite` to create the ui app and have the run script in the `package.json` file
+```
+{
+  "name": "@mono/ui",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "vite"
+  }
+}
+```
+
+_Using packages on the website_
+
+- In the website package, you can import the utils and ui packages like below:
+  `/website/package.json`
+
+```
+{
+  "name": "website",
+  "version": "0.0.1",
+  "dependencies": {
+    "@mono/ui": "workspace:*",
+    "@mono/utils": "workspace:*"
+  }
+}
+```
+
+- Install dependencies with `pnpm install` and you can use the packages in the website package.
+
+## Pnpm Limitations
+
+1. **Compatibility**: <br />
+   `pnpm` is not compatible with all packages. Some packages may not work with `pnpm` due to the way they are written.
+   However, this is a rare case and most packages work well with `pnpm`.
+
+2. **Learning Curve**: <br />
+   `pnpm` has a different approach to handling dependencies, which may require some time to get used to.
+
+3. **Community Support**: <br />
+   `pnpm` has a smaller community compared to `npm` and `yarn`. This may result in slower updates and fewer resources available online.
+
+## More about Pnpm
+
+- [Pnpm Documentation](https://pnpm.io/)
+- [Pnpm on Twitter](https://twitter.com/pnpmjs)
