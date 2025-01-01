@@ -1,0 +1,7 @@
+{
+  "title": "Design Patterns",
+  "description": "Comprehensive guide on design patterns",
+  "icon": "Pattern",
+  "root": true,
+  "pages": ["index"]
+}
