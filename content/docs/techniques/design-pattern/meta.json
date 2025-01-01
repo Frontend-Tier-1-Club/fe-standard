@@ -3,5 +3,18 @@
   "description": "Comprehensive guide on design patterns",
   "icon": "Pattern",
   "root": true,
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "module-pattern",
+    "singleton-pattern",
+    "observer-pattern",
+    "factory-pattern",
+    "facade-pattern",
+    "decorator-pattern",
+    "mvc-model-view-controller",
+    "state-pattern",
+    "command-pattern",
+    "prototype-pattern",
+    "builder-pattern"
+  ]
 }
