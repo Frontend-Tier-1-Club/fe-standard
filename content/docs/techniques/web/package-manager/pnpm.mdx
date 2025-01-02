@@ -57,7 +57,7 @@ This results in significant disk space savings and faster installations.
 Example: <br />
 Using `pnpm` and `vite` to a monorepos source code strucure like below:
 
-<img src="/images/pnpm_monorepos_structure.png" alt="pnpm-monorepos" />
+<img src="/images/javascript/package-manager/pnpm_monorepos_structure.png" alt="pnpm-monorepos" />
 
 In `pnpm-workspace.yaml` file, you can define the workspace and the packages that are part of the workspace.
 
@@ -119,6 +119,76 @@ _Using packages on the website_
 ```
 
 - Install dependencies with `pnpm install` and you can use the packages in the website package.
+
+## Pnpm `node_modules` structure
+
+`Symlinks` are symbolic links that pnpm uses to create a nested structure of dependencies.
+pnpm's `node_modules` layout uses symbolic links to create a nested structure of dependencies.
+
+`a hard link` is a different reference to the same file. In soft link, you create a new file, and the contents of the file point to another path. <br />
+A hard link refers directly to physical data on the disk. Multiple hard links to one file refer to the same data; it is the same inode. So, any changes made to the file via any hard link are reflected in all hard links.
+Every file of every package inside `node_modules` is a hard link to the content-addressable store.
+
+Example:
+
+<img src="/images/javascript/package-manager/symlinked.png" alt="pnpm-symlinked-node_modules" />
+
+These are the only "real" files in node_modules. Once all the packages are hard linked to node_modules, symbolic links are created to build the nested dependency graph structure.
+Both packages are hard linked into a subfolder inside a node_modules folder
+
+```bash
+# Traditional approach (npm/yarn)
+node_modules/
+└── react/                  # 1MB
+    └── node_modules/
+        └── dependencyA/      # 800KB
+            └── node_modules/
+                └── dependencyB/ # 400KB
+# Total:  2.2MB
+
+# PNPM approach
+.pnpm/               # 2.2MB (shared across ALL projects)
+projectA/node_modules/     # ~0MB (hard links)
+projectB/node_modules/     # ~0MB (hard links)
+projectC/node_modules/     # ~0MB (hard links)
+```
+
+## PNPM Hoisted Mode
+
+Hoisted mode is an alternative node_modules structure that makes PNPM behave more like npm/yarn,
+useful for compatibility with older tools or specific use cases.
+
+Example:
+I have 2 imports in express app
+
+```
+const express = require('express');
+const moment = require('moment');
+```
+
+- With default mode, only works if 'moment' is in package.json
+- With hoisted mode, it will hoist the moment package to the top level of node_modules. Works even if 'moment' is a dependency of a dependency
+
+```
+node_modules/
+└── moment/
+    └── node_modules/
+        └── express/
+```
+
+I created a React + Vite with Pnpm and installed `mui/material`
+- Create `.npmrc` file and add `node-linker=hoisted`
+- You can check the `node-linker` mode by this command `pnpm config get node-linker`
+
+After I installed, the result of node_modules is: 
+<img src="/images/javascript/package-manager/image.png" alt="pnpm-hoisted" />
+
+In this case, I've installed `@mui/material`, in `node_modules` folder. <br />
+I have 2 new packages are `@mui` and `@emotion` (the MUI dependency)<br />
+So with this setup `Emotion` (styling engine) packages are available and All Material-UI sub-dependencies are accessible
+
+*Noted*: You can run this command to see the full dependency tree with hoisting:<br />
+`pnpm list -r --json`
 
 ## Pnpm Limitations
 
