@@ -6,6 +6,28 @@ preview: "JSON Web Tokens Security (JWT)"
 
 import Table from "@/shared/components/table"
 
+export const data = [
+  { Atribute: "iss (Issuer)", Description: "Identifies the entity that issued the token." },
+  { Atribute: "sub (Subject)", Description: "Identifies the principal subject of the token." },
+  {
+    Atribute: "aud (Audience)",
+    Description: "Identifies the recipients that the token is intended for."
+  },
+  { Atribute: "exp (Expiration Time)", Description: "Specifies when the token will expire." },
+  {
+    Atribute: "nbf (Not Before)",
+    Description: "Specifies the time before which the token must not be accepted."
+  },
+  {
+    Atribute: "iat (Issued At)",
+    Description: "Identifies the time at which the token was issued."
+  },
+  {
+    Atribute: "jti (JWT ID)",
+    Description: "A unique identifier for the token, useful for preventing replay attacks."
+  }
+]
+
 # JSON Web Tokens (JWT) Security
 
 JSON Web Tokens (JWT) are a widely used standard for securely transmitting information between parties as a JSON object.
@@ -16,13 +38,10 @@ This document outlines JWT's security features, potential vulnerabilities, and b
 In the early days of web development, developer want to find a way to manage user authentication and sessions in a more efficient and secure manner. Before the widespread use of JWT (JSON Web Tokens), they relied on several older methods to manage authentication and user sessions like cookies and server-side sessions.
 But it had their limitations:
 
-### 1. Server-Side Sessions:
+### 1. Server-Side Sessions Problems ?
 
-<b>What It Was:</b>
 The server stored all session data (e.g., user ID, permissions) and associated it with the session
 ID.
-
-{" "}
 
 <b>Drawbacks:</b>
 <ul>
@@ -41,14 +60,9 @@ ID.
   </li>
 </ul>
 
-### 2. Cookies
+### 2. Cookies Problems ?
 
-{" "}
-
-<b>What It Was:</b>
 Cookies stored session data on the client side, with the server validating the session ID.
-
-{" "}
 
 <b>Drawbacks:</b>
 <ul>
@@ -60,14 +74,9 @@ Cookies stored session data on the client side, with the server validating the s
   </li>
 </ul>
 
-### 3. HTTP Basic Authentication
+### 3. HTTP Basic Authentication Problems ?
 
-{" "}
-
-<b>What It Was:</b>
 User credentials (username and password) were sent with every request in the Authorization header.
-
-{" "}
 
 <b>Drawbacks:</b>
 <ul>
@@ -115,7 +124,7 @@ payload contains claims, which are statements about an entity and additional dat
 used to represent user information, permissions, or other metadata. The signature is used to verify
 that the JWT is valid and has not been tampered with.
 
-## Structure of a JWT
+### Structure of a JWT
 
 A JWT is divided into three parts, separated by dots (`.`):
 
@@ -131,7 +140,7 @@ Example:
 
 ---
 
-### 1. Header
+#### 1. Header
 
 The header contains metadata about the token, including the type of token and the signing algorithm used. It is a JSON object encoded in Base64Url format. This metadata is crucial for both the sender and the recipient to understand how to process the token. For example:
 
@@ -154,7 +163,7 @@ The header contains metadata about the token, including the type of token and th
 
 The `alg` and `typ` fields in the header provide critical information for validating the token’s signature and ensuring proper cryptographic handling. Misconfiguration or unsupported algorithms can introduce vulnerabilities, so these fields must be validated rigorously.
 
-### 2. Payload
+#### 2. Payload
 
 The payload contains the claims, which are statements about the entity (user) and additional data. Example:
 
@@ -171,34 +180,11 @@ The payload contains the claims, which are statements about the entity (user) an
 
 - **Registered Claims**: Predefined claims that provide useful, standardized metadata:
 
-  <Table
-    headers={["Atribute", "Description"]}
-    data={[
-      { Atribute: "iss (Issuer)", Description: "Identifies the entity that issued the token." },
-      { Atribute: "sub (Subject)", Description: "Identifies the principal subject of the token." },
-      {
-        Atribute: "aud (Audience)",
-        Description: "Identifies the recipients that the token is intended for."
-      },
-      { Atribute: "exp (Expiration Time)", Description: "Specifies when the token will expire." },
-      {
-        Atribute: "nbf (Not Before)",
-        Description: "Specifies the time before which the token must not be accepted."
-      },
-      {
-        Atribute: "iat (Issued At)",
-        Description: "Identifies the time at which the token was issued."
-      },
-      {
-        Atribute: "jti (JWT ID)",
-        Description: "A unique identifier for the token, useful for preventing replay attacks."
-      }
-    ]}
-  />
+  <Table headers={["Atribute", "Description"]} data={data} />
 
 - **Custom Claims**: Application-specific data. For example, `role` or `permissions`. Avoid including sensitive information here as the payload is not encrypted.
 
-### 3. Signature
+#### 3. Signature
 
 The signature is created by encoding the header and payload, then signing it using a secret key or a private key, depending on the algorithm. The signature ensures the token's integrity and authenticity. For example:
 
@@ -212,8 +198,6 @@ HMACSHA256(
 - **Symmetric Algorithms (e.g., HS256)**: Use the same key for signing and verification. Both the sender and receiver must securely share the key.
 - **Asymmetric Algorithms (e.g., RS256, ES256)**: Use a private key for signing and a public key for verification. Only the issuer needs to keep the private key secure.
 
-## How to Work With JWT ?
-
 The output is three Base64-URL strings separated by dots that can be easily passed in HTML and HTTP environments, while being more compact when compared to XML-based standards such as SAML.
 
 <img
@@ -222,73 +206,160 @@ The output is three Base64-URL strings separated by dots that can be easily pass
   alt="token-string"
 />
 
+## How to Work With JWT ?
+
+How are signed tokens used in authentication? Here’s a simplified outline of the process:
+
+1. A user signs into their account on an authentication server
+2. The authentication server returns a signed token with their account information or an ID (or both)
+3. The signed token is stored in the browser’s localStorage or sessionStorage or anywhere the website prefers to store it
+4. The signed token is retrieved and used anytime a part of the website needs authenticated access
+
+Here’s a visual representation of the process:
+
 <img className="rounder-md" src="/images/javascript/security/jwt_work_flow.avif" alt="flow_img" />
 
-## Real-world applications of JSON Web Tokens
+## The problem JWT aims to solve
 
-In the modern web, you will often have several parties communicating with each other. Certain features will naturally be restricted and require some sort of authorization mechanism.
+JSON Web Tokens (JWTs) address several business pain points, particularly in modern application architectures and security models.
 
-### Stateless Authentication for Web and Mobile Applications
+### Scalability in Authentication
 
-1. Scenario:
+A growing e-commerce platform hosts millions of users who frequently log in,
+browse products, and make purchases. The platform initially implemented session-based
+authentication, where user sessions are stored on the server. However, as the platform scaled, this
+approach began to show significant limitations, even though it can become a bottleneck as the user
+base grows
 
-- An e-commerce platform has a web app and a mobile app.
+<b>Solution with JWT:</b> JWTs are stateless and do not require server-side storage. The token
+itself carries all the necessary data for authentication, allowing seamless scaling across
+distributed systems.
 
-- Users log in to their accounts to manage orders, browse products, and make purchases.
+### Cost Management
 
-2. Implementation:
+A growing SaaS company offers a multi-tenant platform used by thousands of
+businesses. As their user base expands, they face escalating costs in managing authentication and
+session storage due to traditional session-based authentication.
 
-Login Flow:
+<b>Solution with JWT:</b> By removing the dependency on session storage, JWTs reduce infrastructure
+costs and simplify system architecture.
 
-- The user logs in via the web or mobile app.
+### Security Concerns
 
-- The authentication server validates the credentials and issues a JWT containing user claims (e.g., user ID, roles, and permissions).
+Traditional authentication methods often expose sensitive session data to risks
+like session hijacking. However, many companies especially the fintech companies manage an online
+banking platform where users perform sensitive transactions like fund transfers and account
+management. The platform initially uses traditional session-based authentication. However, the
+company encounters significant security risks
 
-Client-Side Storage:
+<b>Solution with JWT:</b> Tokens are signed and optionally encrypted, ensuring integrity and
+confidentiality. They can include short expiration times and support mechanisms like refresh tokens
+to minimize risks.
 
-- Web App: Stores the JWT in an HTTP-only cookie or localStorage.
+### Developer Productivity
 
-- Mobile App: Stores the JWT securely using libraries like SecureStorage or Keychain.
+A logistics company operates a digital platform where users access services via
+web, mobile apps (iOS and Android), and APIs for third-party integrations. They face challenges with
+consistent authentication across all platforms due to differing technologies and session management
+requirements.
 
-Subsequent Requests:
+<b>Solution with JWT:</b> JWT solves cross-platform compatibility pain points by offering a
+standardized, portable, and secure authentication method that works seamlessly across web, mobile,
+and API environments.
 
-- The client app includes the JWT in the Authorization header (Bearer **token**).
+### Customer Experience
 
-- The server verifies the token on every request by checking the signature and expiration date.
+A subscription-based streaming service offers users access to content across
+multiple devices, including web, mobile, smart TVs, and gaming consoles. Customers expect quick and
+seamless authentication, but traditional methods create friction, leading to frustration and
+drop-offs.
 
-- If valid, the server processes the request without querying a session store.
-
-Example:
-
-- Amazon or Flipkart mobile and web applications use JWTs to authenticate user actions like adding items to the cart or checking order history.
+<b>Solution with JWT:</b> JWTs can support single sign-on (SSO) and allow users to remain logged in
+across multiple devices and services until the token expires.
 
 ## Challenges and Limitations of JWT
 
 While JWTs offer many benefits, they also come with challenges and limitations that developers must consider:
 
-#### Token Size
+### Limited Token Size
 
-JWTs are self-contained tokens that carry all necessary information for authentication and authorization within their structure. Unlike traditional session IDs, which are typically small strings, JWTs consist of three distinct parts
+JWTs can become significantly larger than traditional session IDs because they contain headers,
+payloads, and cryptographic signatures. If you use the JSON Compact Serialized format (most common format),
+you have to keep in mind that it should be as short as possible because it is mainly used in a web context. A <b>4kb</b> JWT is something that you should avoid.
 
-#### Revocation Complexity
+<b>Impact:</b>
+<ul>
+  <li>Increases bandwidth usage, especially in systems with frequent requests.</li>
+  <li>May impact performance over slow networks (e.g., mobile or IoT).</li>
+</ul>
 
-JWTs are stateless, meaning they contain all the information needed for authentication within the token itself and do not rely on server-side session storage. Once issued, a JWT is valid until it expires, unless specific measures are taken to revoke it.
+### Revocation Complexity
 
-#### Expiration and Rotation
+Despite the convenience and efficiency offered by JWT tokens, they have a significant limitation
+when it comes to handling revoked tokens. Consider a scenario where a user’s access rights are
+revoked before the expiration time of their JWT token. In this case, the resource server has no way
+of knowing that the token has been revoked. It will continue to accept the token as valid until it
+expires, potentially allowing unauthorized access to protected resources.
 
-Properly managing token lifecycles is critical.
+<b>Impact:</b>
+<ul>
+  <li>If a JWT is compromised, it remains valid until it expires.</li>
+  <li>May impact performance over slow networks (e.g., mobile or IoT).</li>
+</ul>
 
-#### Security Risks
+### Expiration and Rotation
 
-Poor implementation can lead to vulnerabilities (e.g., improper validation, weak secret keys).
+One challenge when using JWTs is handling token rotation and key updates. JWTs have an expiration
+time, after which they are considered invalid. When a token needs to be renewed or rotated, it’s
+important to ensure a smooth transition without disrupting the user experience. In addition,
+periodically updating the signing key helps enhance security and mitigate the impact of a
+compromised key.
 
-#### Compatibility
+<b>Impact:</b>
+<ul>
+  <li>
+    Short-lived tokens enhance security but require refresh tokens, adding complexity to token
+    rotation.
+  </li>
+  <li>Long-lived tokens increase security risks if they are compromised.</li>
+</ul>
 
-May not be the best fit for every system (e.g., legacy systems relying on server-side sessions).
+### Security Risk
 
-## JWT and Session ?
+In the world of web security, JSON Web Tokens (JWTs) play a pivotal in role in managing
+authentication and maintaining session information. However, the security of JWTs is only as robust
+as the mechanisms and practices employed to handle them.
 
-- Compare JWT and Session (with table)
+<b>Impact:</b>
+<ul>
+  <li>
+    <b>Token Tampering:</b> Without proper signature verification, JWTs can be altered by attackers.
+  </li>
+  <li>
+    <b>Algorithm Confusion:</b> Misconfiguration of signing algorithms (e.g., using "none") can lead
+    to vulnerabilities.
+  </li>
+  <li>
+    <b>Sensitive Data Exposure:</b> Claims stored in the payload can be decoded easily if not
+    encrypted, exposing sensitive information.
+  </li>
+</ul>
+
+### Compatibility
+
+JWTs follow a widely accepted standard (RFC 7519), which makes them suitable for modern
+applications. However, integrating JWTs into existing systems or across diverse environments can
+present compatibility challenges. These issues often arise in legacy systems, heterogeneous
+ecosystems, and when dealing with varying standards and protocols.
+
+<b>Impact:</b>
+<ul>
+  <li>May require additional middleware or libraries to handle JWTs in legacy systems.</li>
+  <li>
+    Compatibility issues can arise when integrating JWTs into systems with different encryption
+    standards.
+  </li>
+</ul>
 
 ## Conclusion
 
