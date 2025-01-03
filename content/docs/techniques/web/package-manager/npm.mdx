@@ -1,8 +1,9 @@
 ---
 title: Understand npm
 description: Why?
-index: true
 ---
+
+## What is `npm`?
 
 Back in the day when you wanted to install a package in your project,
 you had to download the package from the internet, extract it,
@@ -12,18 +13,21 @@ That is the pain that `npm` was created to solve - providing a quick way to mana
 and update packages in your project.<br/><br/>
 Currently `npm` is the oldest and most widely used package manager for JavaScript. Which offer a strong community support and a vast number of packages available in the `npm` registry.
 
-<h2>What can `npm`(Node packages manager) do for you?</h2>
+## What can `npm`(Node packages manager) do for you?
 
-1. <h4>Extensive package management capability</h4>
-   Dependency Management Modern JavaScript applications often rely on multiple third-party libraries
-   and frameworks. `npm` makes it easy to manage these dependencies by:
-   - Installing Packages: With `npm`, installing a package is as simple as running `npm install <package-name>`.This command fetches the latest version of the package from the `npm` Registry
-   and saves it locally in the `node_modules` directory.
-   - Versioning and Updates: `npm` helps maintain compatibility by allowing you to specify
-   which versions of a package your project can use. It does this by saving all your dependencies 
-   and their versions in a file called `package.json`.
-   <p>Example of a package.json file:</p>
-   ```json
+### Extensive package management capability
+Dependency Management Modern JavaScript applications often rely on multiple third-party libraries
+and frameworks. `npm` makes it easy to manage these dependencies by:
+
+- Installing Packages: With `npm`, installing a package is as simple as running `npm install <package-name>`.This command fetches the latest version of the package from the `npm` Registry
+and saves it locally in the `node_modules` directory.
+- Versioning and Updates: `npm` helps maintain compatibility by allowing you to specify
+which versions of a package your project can use. It does this by saving all your dependencies
+and their versions in a file called `package.json`.
+
+Example of a package.json file:
+
+```json
    {
      "name": "my-project",
      "version": "1.0.0",
@@ -33,48 +37,56 @@ Currently `npm` is the oldest and most widely used package manager for JavaScrip
        "lodash": "^4.17.21"
      }
    }
-   ```
-   - Environment management system: `npm` provides two ways to handle package installations 
-   and dependencies: project-specific (local) and system-wide (global) contexts.
-      + Local: When you install a package using `npm install`, it is saved in the `node_modules` directory.
-      + Global: When you install a package using `npm install -g`, it is saved in a global directory and can be accessed from any project.
+```
 
-2. <h4>Cross-project development with package linking</h4>{" "}
-   `npm` allows you to link packages across projects, with this:
-      - It easy to develop and test packages in isolation. This is especially useful when you are working on a library or module that is used across multiple projects.
-      - By linking the package, you can make changes to the package and see the effects in real-time across all projects that use it.
-   
-   <p><strong>Example:</strong></p>
-   You have a senerio where you are developing a project name `main-app` and a library name `custom-lib` 
-   that you are working on. You can add the `custom-lib` library to the `main-app` project localy.<br />
-   
-   First you will need to add the `custom-lib` library to the `npm` registry by running `npm link` in the `custom-lib` directory.
-   When your `custom-lib` library is added to the `npm` registry the terminal should display a message like this:
-   ```
-   $ npm link
+Environment management system: `npm` provides two ways to handle package installations and dependencies: project-specific (local) and system-wide (global) contexts.
 
-   added 1 package, and audited 3 packages in 1s
+- Local: When you install a package using `npm install`, it is saved in the `node_modules` directory.
+- Global: When you install a package using `npm install -g`, it is saved in a global directory and can be accessed from any project.
 
-   found 0 vulnerabilities
-   ```
-   Next you will need to link the `custom-lib` library to the `main-app` project by running `npm link custom-lib` in the `main-app` directory.
-   When your `custom-lib` library is linked to the `main-app` project the terminal should look like this:
-   ```
-   $ npm link custom-lib
+### Cross-project development with package linking
 
-   added 1 package, and audited 517 packages in 2s
+`npm` allows you to link packages across projects, with this:
 
-   107 packages are looking for funding
-   run `npm fund` for details
+- It easy to develop and test packages in isolation. This is especially useful when you are working on a library or module that is used across multiple projects.
+- By linking the package, you can make changes to the package and see the effects in real-time across all projects that use it.
 
-   found 0 vulnerabilities
-   ```
-   Now you can use your own library in your project as if it was a package from the `npm` registry.
+<strong>Example:</strong>
+You have a senerio where you are developing a project name `main-app` and a library name `custom-lib`
+that you are working on. You can add the `custom-lib` library to the `main-app` project localy.<br />
 
-<h2>The limitation of `npm`</h2>
-   - `npm` is generally consider slower performance compared to 
-   newer alternatives like `bun`, ``pnpm``, `yarn` with their new way of approaching package management.
+First you will need to add the `custom-lib` library to the `npm` registry by running `npm link` in the `custom-lib` directory.
+When your `custom-lib` library is added to the `npm` registry the terminal should display a message like this:
 
-<h2>More about `npm`</h2>
+```
+$ npm link
+
+added 1 package, and audited 3 packages in 1s
+
+found 0 vulnerabilities
+```
+
+Next you will need to link the `custom-lib` library to the `main-app` project by running `npm link custom-lib` in the `main-app` directory.
+When your `custom-lib` library is linked to the `main-app` project the terminal should look like this:
+
+```
+$ npm link custom-lib
+
+added 1 package, and audited 517 packages in 2s
+
+107 packages are looking for funding
+run `npm fund` for details
+
+found 0 vulnerabilities
+```
+
+Now you can use your own library in your project as if it was a package from the `npm` registry.
+
+## The limitation of `npm`
+
+`npm` is generally consider slower performance compared to newer alternatives like `bun`, ``pnpm``, `yarn` with their new way of approaching package management.
+
+## More about `npm`
+
 - [npm Documentation](https://docs.npmjs.com/)
 - [npm Github](https://github.com/npm)
