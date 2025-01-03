@@ -4,13 +4,45 @@ description: Understand CSRF attack and how to prevent it.
 preview: "CSRF"
 ---
 
-## What is Cross-site Request Forgery (CSRF) ?
+## What is CSRF ?
 
 <b>CSRF</b> is a type of web vulnerability that allows the attackers to trick user into performing
 unwanted actions on a web application where they are authenticated.
 
-The attackers can create links that resemble familiar applications, such as "faceebook.com" instead of "facebook.com".
+The attackers can create links that resemble familiar applications, such as "faceebook.com" which kinda famillar to "facebook.com".
 Clicking on these links can unknowingly send requests to the Facebook server, potentially leading to unwanted consequences for your account.
+
+## How does CSRF work ?
+
+For example, you have an API that lets the user change password on their account. When a user performs this action, they will make an HTTP request as shown:
+
+```
+POST /update-password HTTP/1.1
+Host: facebook.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 30
+Cookie: session=someRandomSessionToken
+password=istoleyourpassword
+```
+
+With the information shown, the attacker can create a web page for example "faceebook.com" containing the following HTML:
+
+```
+<html>
+    <body>
+        <form action="https://facebook.com/update-password" method="POST">
+            <input type="hidden" name="email" value="istoleyourpassword" />
+        </form>
+        <script>
+            document.forms[0].submit();
+        </script>
+    </body>
+</html>
+```
+
+If the user visits the above web page, the action will automatically be trigger and if the user is logged in to the website, in the example is "facebook.com",
+their browser will include their session cookie in the request. And the target website, which is "facebook.com" will treat the request as having been made by the victim user
+and change their password
 
 ## How dangerous are CSRF attacks ?
 
@@ -38,7 +70,10 @@ that requires validation, the server-side application should verify that the req
 token which matches the value that was stored in the user's session.
 
 In the form on client-side should have a hidden field that holds the value of the token that generated on server-side:
-`<input type="hidden" name="csrf-token" value="aTokenThatGeneratedOnServer" />`.
+
+```
+<input type="hidden" name="csrf-token" value="aTokenThatGeneratedOnServer" />
+```
 
 <b>SameSite Cookie Attribute:</b>
 This attribute helps the browser decide whether to send cookies along with cross-site requests. The
@@ -48,3 +83,17 @@ following a regular link. This attribute should not replace a CSRF Token. It sho
 the token to protect the user like a second layer of defense.
 
 <b>Check the Origin and Referrer Headers:</b>
+You need to determine the origin that request is going to/coming from. On server, you need to verify
+if both of them match. If they do, so you can accept the request as ligitimate and if they don't,
+you can discard the request
+
+## If you want to dive deeper on CSRF
+
+<b>References:</b> I gathered information for this document about CSRF on these awesome websites
+
+[OWASP](https://owasp.org/www-community/attacks/csrf) - OWASP offical site is a really reliable
+source about security. They have documents about not only <b>CSRF</b>, there have also alot of
+documents related to web security in general.
+
+[Cloudflare](https://developers.cloudflare.com/waf/troubleshooting/samesite-cookie-interaction/) -
+Another reliable source about security.
