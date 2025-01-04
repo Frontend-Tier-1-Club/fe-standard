@@ -1,5 +1,11 @@
 # @tier1club/frontend
 
+## 0.0.4
+
+### Patch Changes
+
+- Fix naming deployment scripts
+
 ## 0.0.3
 
 ### Patch Changes
