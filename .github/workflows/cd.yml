@@ -1,46 +1,56 @@
-# name: CD
+name: CD
 
-# on:
-#   push:
-#     tags:
-#       - "**"
+on:
+  push:
+    tags:
+      - "**"
+env:
+  HUSKY: "0"
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-22.04
-#     strategy:
-#       matrix:
-#         node-version: [22.x]
-#     permissions:
-#       contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        node-version: [22.x]
+    permissions:
+      contents: write
 
-#     steps:
-#       - uses: actions/checkout@v4
-#         with:
-#           ref: ${{ github.head_ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - name: Install dependencies
+        run: bun Install
 
-#       - name: Build and push Docker image
-#         run: |
-#           chmod -R +x deploy/scripts
-#           ./deployment/scripts/build-docker.sh
-#         env:
-#           GITHUB_REF_NAME: ${{ github.ref_name }}
-#           GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
-#           GITLAB_REGISTRY_USER: ${{ secrets.GITLAB_REGISTRY_USER }}
-#           HUSKY: "0"
+      - name: Build and push Docker image
+        run: |
+          bun run build
+          chmod -R +x deploy/scripts
+          ./deployment/scripts/build-docker.sh
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
+          GITLAB_REGISTRY_USER: ${{ secrets.GITLAB_REGISTRY_USER }}
+          HUSKY: "0"
 
-#       - uses: stefanzweifel/git-auto-commit-action@v5
-#         with:
-#           commit_message: "Release ${{ github.ref_name }} + update docker-compose.yml files"
-#           branch: main
-#           push: true
-#           commit_user_name: tier1-bot
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Release ${{ github.ref_name }} + update docker-compose.yml files"
+          branch: main
+          push: true
+          commit_user_name: tier1-bot
 
-#       # - name: Discord Notification
-#       #   uses: Ilshidur/action-discord@master
-#       #   with:
-#       #     args: "Deploy 🚀 ant-okrs-app:${{ github.ref_name }} to production successfully"
-#       #   env:
-#       #     DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FE_STANDAR }}
-#       #     DISCORD_USERNAME: ${{ github.actor }}
-#       #     DISCORD_AVATAR: ${{ github.actor }}
+      # - name: Discord Notification
+      #   uses: Ilshidur/action-discord@master
+      #   with:
+      #     args: "Deploy 🚀 ant-okrs-app:${{ github.ref_name }} to production successfully"
+      #   env:
+      #     DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_FE_STANDAR }}
+      #     DISCORD_USERNAME: ${{ github.actor }}
+      #     DISCORD_AVATAR: ${{ github.actor }}

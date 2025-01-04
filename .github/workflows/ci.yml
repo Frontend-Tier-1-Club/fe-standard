@@ -24,6 +24,9 @@ permissions:
   actions: write
   contents: read
 
+env:
+  HUSKY: "0"
+
 jobs:
   check:
     runs-on: ubuntu-22.04
