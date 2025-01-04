@@ -6,6 +6,6 @@ services:
     network_mode: bridge
     environment:
       - NODE_ENV=production
-      - PORT=${PORT}
     ports:
-      - "${PORT}:${PORT}"
+      - "80:80"
+      - "443:443"
