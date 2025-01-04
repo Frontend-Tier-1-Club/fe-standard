@@ -1,5 +1,11 @@
 # @tier1club/frontend
 
+## 0.0.5
+
+### Patch Changes
+
+- Fix deployment scripts
+
 ## 0.0.4
 
 ### Patch Changes
