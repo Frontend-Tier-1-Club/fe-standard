@@ -6,7 +6,13 @@ import type { ReactNode } from "react"
 
 export function AppProvider({ children }: { children: ReactNode }): React.ReactElement {
   return (
-    <RootProvider>
+    <RootProvider
+      search={{
+        options: {
+          type: "static"
+        }
+      }}
+    >
       <TooltipProvider>{children}</TooltipProvider>
     </RootProvider>
   )

@@ -1,7 +1,7 @@
 {
-  "name": "@standard/frontend",
+  "name": "@tier1club/frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbo",
@@ -15,7 +15,7 @@
     "postinstall": "fumadocs-mdx && bun husky",
     "prepare": "husky",
     "upgrade.deps": "bunx npm-check-updates --dep dev,prod,peer -u",
-    "start": "next start"
+    "start": "bux serve out"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.1.6",
