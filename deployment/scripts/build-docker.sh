@@ -27,8 +27,8 @@ done
 echo "Add environment variables to .env file successfully"
 
 echo "Start update version in docker-compose files"
-sed -i 's/\(image: registry\.gitlab\.com\/tier1club\/tier1-frontend:\)[0-9.]\+/\1'$GITHUB_REF_NAME'/g' deploy/docker-compose.production.yml
-sed -i 's/\(registry\.gitlab\.com\/tier1club\/tier1-frontend:\)[0-9.]\+/\1'$GITHUB_REF_NAME'/g' deploy/docker-compose.local.yml
+sed -i 's/\(image: registry\.gitlab\.com\/tier1club\/tier1-frontend:\)[0-9.]\+/\1'$GITHUB_REF_NAME'/g' deployment/docker-compose.production.yml
+sed -i 's/\(registry\.gitlab\.com\/tier1club\/tier1-frontend:\)[0-9.]\+/\1'$GITHUB_REF_NAME'/g' deployment/docker-compose.local.yml
 
 echo "Update version in docker-compose files successfully"
 
