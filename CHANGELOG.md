@@ -1,5 +1,11 @@
 # @tier1club/frontend
 
+## 0.0.8
+
+### Patch Changes
+
+- revert the old auto commit bot
+
 ## 0.0.7
 
 ### Patch Changes
