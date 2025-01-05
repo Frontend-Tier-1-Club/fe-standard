@@ -6,7 +6,7 @@ services:
       context: ..
       dockerfile: deployment/Dockerfile
       tags:
-        - "registry.gitlab.com/tier1club/tier1-frontend:0.0.1"
+        - "registry.gitlab.com/tier1club/tier1-frontend:0.0.8"
     network_mode: bridge
     environment:
       - NODE_ENV=production
