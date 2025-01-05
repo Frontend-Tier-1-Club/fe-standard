@@ -47,8 +47,9 @@ jobs:
           commit_message: "Release ${{ github.ref_name }} + update docker-compose.yml files"
           labels: "release"
           reviewers: "tier1-bot"
-          assignees: "harrytran998,teddynguyennn"
           token: ${{ secrets.PAT_TOKEN }}
+          base: main
+          assignees: "harrytran998,teddynguyennn"
 
       # - name: Discord Notification
       #   uses: Ilshidur/action-discord@master
