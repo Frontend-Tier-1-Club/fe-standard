@@ -15,6 +15,7 @@ jobs:
         node-version: [22.x]
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -38,12 +39,16 @@ jobs:
           GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
           GITLAB_REGISTRY_USER: ${{ secrets.GITLAB_REGISTRY_USER }}
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
         with:
+          title: "Release ${{ github.ref_name }} + update docker-compose.yml files"
+          branch: release/${{ github.ref_name }}
           commit_message: "Release ${{ github.ref_name }} + update docker-compose.yml files"
-          branch: main
-          push: true
-          commit_user_name: tier1-bot
+          labels: "release"
+          reviewers: "tier1-bot"
+          assignees: "harrytran998,teddynguyennn"
+          token: ${{ secrets.PAT_TOKEN }}
 
       # - name: Discord Notification
       #   uses: Ilshidur/action-discord@master

@@ -1,5 +1,11 @@
 # @tier1club/frontend
 
+## 0.0.6
+
+### Patch Changes
+
+- Update github cd workflow
+
 ## 0.0.5
 
 ### Patch Changes
