@@ -1,5 +1,11 @@
 # @tier1club/frontend
 
+## 0.0.7
+
+### Patch Changes
+
+- fix: add missing base config in creating PR action
+
 ## 0.0.6
 
 ### Patch Changes
