@@ -39,17 +39,12 @@ jobs:
           GITLAB_REGISTRY_TOKEN: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
           GITLAB_REGISTRY_USER: ${{ secrets.GITLAB_REGISTRY_USER }}
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          title: "Release ${{ github.ref_name }} + update docker-compose.yml files"
-          branch: release/${{ github.ref_name }}
           commit_message: "Release ${{ github.ref_name }} + update docker-compose.yml files"
-          labels: "release"
-          reviewers: "tier1-bot"
-          token: ${{ secrets.PAT_TOKEN }}
-          base: main
-          assignees: "harrytran998,teddynguyennn"
+          branch: main
+          push: true
+          commit_user_name: tier1-bot
 
       # - name: Discord Notification
       #   uses: Ilshidur/action-discord@master
