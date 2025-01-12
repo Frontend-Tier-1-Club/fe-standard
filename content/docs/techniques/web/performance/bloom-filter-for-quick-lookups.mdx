@@ -3,12 +3,175 @@ title: Bloom filter for quick lookups
 description: Introduction to Bloom filter
 ---
 
-When dealing with massive datasets of unique items (like URLs, usernames, etc.), storing them directly in traditional data structures (hash tables, sets) can consume a vast amount of memory. This becomes especially problematic when storage is expensive or limited (e.g., in-database indexes, caches).
-In the other hand, if we need to frequently check whether an item belongs to a large set, using linear search or even more optimized data structures like hash tables can still result in significant latency, especially as the dataset grows.
+## Introduce
+In front-end development, a quick look-up problem refers to the need for efficient and fast access to specific information or data within a web application.
+This often involves optimizing how users or the system itself retrieves required data from a potentially large dataset or system.
+Addressing such challenges is crucial for creating responsive and user-friendly interfaces, particularly in applications requiring real-time or near-instantaneous feedback, such as
+**search engines, recommendation systems, and data processing pipelines**.
 
-Bloom filters provide an elegant solution to these problems by offering a space-efficient and fast way to perform membership tests, albeit with a trade-off (the possibility of false positives).
+## Solutions for common quick lookups problem
+Assume that we have to check if an usernames is in a list of usernames. 
+Let's see some techniques to solve this problem. Each of them both have advantages and disadvantages.
 
-## Abstract
+### 1. **Arrays/ Lists**
+
+An array is a simple data structure but requires O(n) time for lookups unless preprocessed into a sorted or indexed format.
+```javascript
+  const array = [{ name: "Alice", age: 25 }, { name: "Bob", age: 30 }];
+
+  function arrayLookup(name) {
+    return array.find(item => item.name === name) || `No record found for ${name}`;
+  }
+
+  console.log(arrayLookup("Alice")); // { name: 'Alice', age: 25 }
+  console.log(arrayLookup("Charlie")); // No record found for Charlie
+
+```
+**Complexity Analysis**:
+* Time Complexity:
+  - Worst Case: O(n), where n is the length of the array.
+  - Best case: O(1) when matching with the first item.
+
+* Space Complexity: O(1) 
+
+### 2. **Hash maps/ Objects**
+
+We store all usernames in a hash set. Hash Map is great for direct key-value lookups with O(1) average time complexity.
+```javascript
+  const hashMap = new Map();
+  hashMap.set("Alice", { age: 25 });
+  hashMap.set("Bob", { age: 30 });
+
+  console.log(hashMap.has("Alice"));
+  console.log(hashMap.get("Alice")); 
+  console.log(hashMap.has("Charlie")); 
+```
+**Complexity Analysis**:
+* Time Complexity:
+  - Lookup: O(1) on average for both Map and plain objects
+  - Initialization: O(n) for populating the map or object with n items.
+
+* Space Complexity:
+  -  O(n) for storing n items in the map or object.
+
+### 3. **Tries/ Prefix Trees**
+
+A Trie (also called a Prefix Tree) is a tree-like data structure that is used for storing and retrieving keys efficiently.
+```javascript
+  class TrieNode {
+    constructor() {
+      this.children = {}; // Stores child nodes
+      this.isEndOfWord = false; // Marks the end of a word
+    }
+  }
+
+  class Trie {
+    constructor() {
+      this.root = new TrieNode(); // Root node
+    }
+
+    // Insert a word into the Trie
+    insert(word) {
+      let currentNode = this.root;
+      for (const char of word) {
+        if (!currentNode.children[char]) {
+          currentNode.children[char] = new TrieNode();
+        }
+        currentNode = currentNode.children[char];
+      }
+      currentNode.isEndOfWord = true;
+    }
+
+    // Search for a word in the Trie
+    search(word) {
+      let currentNode = this.root;
+      for (const char of word) {
+        if (!currentNode.children[char]) {
+          return false; // Word does not exist
+        }
+        currentNode = currentNode.children[char];
+      }
+      return currentNode.isEndOfWord;
+    }
+
+    // Check if any words in the Trie start with a given prefix
+    startsWith(prefix) {
+      let currentNode = this.root;
+      for (const char of prefix) {
+        if (!currentNode.children[char]) {
+          return false; // Prefix does not exist
+        }
+        currentNode = currentNode.children[char];
+      }
+      return true; // Prefix exists
+    }
+
+    // Retrieve all words with a given prefix
+    getWordsWithPrefix(prefix) {
+      const results = [];
+      let currentNode = this.root;
+
+      // Traverse to the node representing the last character of the prefix
+      for (const char of prefix) {
+        if (!currentNode.children[char]) {
+          return results; // Prefix does not exist
+        }
+        currentNode = currentNode.children[char];
+      }
+
+      // Perform a DFS to collect all words starting from this node
+      const dfs = (node, path) => {
+        if (node.isEndOfWord) {
+          results.push(path);
+        }
+        for (const char in node.children) {
+          dfs(node.children[char], path + char);
+        }
+      };
+
+      dfs(currentNode, prefix);
+      return results;
+    }
+  }
+
+  // Example Usage
+  const trie = new Trie();
+  trie.insert("Alice");
+  trie.insert("Charlie");
+
+  console.log(trie.search("Alice")); // true
+  console.log(trie.search("Ali")); // false
+  console.log(trie.startsWith("A")); // true
+  console.log(trie.getWordsWithPrefix("Ch")); // ['Charlie']
+```
+**Complexity Analysis**:
+* Time Complexity:
+
+  **Insertion**
+    - Complexity: O(L), where L is the length of the string being inserted.
+  
+  **Search**
+    - Complexity: O(L), where L is length of string being searched
+
+  **Prefix Search (Starts-with)**
+    - Complexity: O(L + K), where:
+      - L: Length of prefix
+      - K: Total number of nodes visited to collect matching results.
+
+  **Deletion**
+    - Complexity: O(L), where L is the length of the string being deleted
+
+* Space Complexity:
+  - O(A * L * N), where:
+    * A: Size of the alphabet (number of possible characters).
+    * L: Average length of the strings stored.
+    * N: Number of strings in the Trie.
+
+### Large data problem and why bloom filter
+We can see that traditional data structures like hash tables or Tries can consume a significant amount of memory, especially for large datasets.
+So, this article introduce to you a data structure can work wellin these cases: **Bloom filter**.
+
+## Bloom filter: Abstract
 A bloom filter is a probabilistic data structure that is based on hashing. It is extremely space efficient and is typically used to add elements to a set and test if an element is in a set. Though, the elements themselves are not added to a set. Instead a hash of the elements is added to the set.
 
 When testing if an element is in the bloom filter, false positives are possible. It will either say that an element is definitely not in the set or that it is possible the element is in the set.
@@ -223,8 +386,9 @@ console.log(bloomFilter.check("kiwi"));    // false (Definitely)
 Bloom filters find applications in various domains where space efficiency and fast membership tests are crucial: Web Caching, Database Systems, Recommender Systems,...
 
 ## Conclusion
-Bloom filters are a powerful probabilistic data structure that offers a compelling solution when dealing with large datasets and the need for fast membership tests. They provide excellent space efficiency and constant time operations for insertion and membership checks. The trade-off is the possibility of false positives, but this can be controlled and minimized by adjusting the filter's parameters.
+They are especially suited for systems where memory is limited, and some uncertainty is tolerable. 
+However, for applications needing exact results or requiring deletions, other structures like Tries or hash tables may be more appropriate.
 
 ## Reference
-- [Bloom filter](https://www.geeksforgeeks.org/bloom-filters-introduction-and-python-implementation/) - GeeksforGeeks
-- [Bloom filter] (https://brilliant.org/wiki/bloom-filter/) - Brilliant
+- [Bloom filter introduce and python implementation](https://www.geeksforgeeks.org/bloom-filters-introduction-and-python-implementation/) - GeeksforGeeks
+- [Bloom filter](https://brilliant.org/wiki/bloom-filter/) - Brilliant
