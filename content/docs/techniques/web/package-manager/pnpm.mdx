@@ -177,17 +177,19 @@ node_modules/
 ```
 
 I created a React + Vite with Pnpm and installed `mui/material`
+
 - Create `.npmrc` file and add `node-linker=hoisted`
 - You can check the `node-linker` mode by this command `pnpm config get node-linker`
 
-After I installed, the result of node_modules is: 
-<img src="/images/javascript/package-manager/image.png" alt="pnpm-hoisted" />
+After I installed, the result of node_modules is:
+
+<img src="/images/javascript/package-manager/pnpm-hoisted-mode.png" alt="pnpm-hoisted" />
 
 In this case, I've installed `@mui/material`, in `node_modules` folder. <br />
 I have 2 new packages are `@mui` and `@emotion` (the MUI dependency)<br />
 So with this setup `Emotion` (styling engine) packages are available and All Material-UI sub-dependencies are accessible
 
-*Noted*: You can run this command to see the full dependency tree with hoisting:<br />
+_Noted_: You can run this command to see the full dependency tree with hoisting:<br />
 `pnpm list -r --json`
 
 ## Pnpm Limitations
