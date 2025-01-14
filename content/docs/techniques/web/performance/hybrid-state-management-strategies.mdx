@@ -5,62 +5,442 @@ description: Hybrid State Management Strategies
 
 ## Introduction to Hybrid State
 
-What is Hybrid State?
+Hybrid state management combines the use of local state, global state, and derived state to balance performance, maintain consistency, and ensure scalability.
+Local state handles component-specific data, global state facilitates communication and data sharing accross the application and , and derived state dynamically computes values based on existing state to avoid redundancy and ensure accuracy.
 
-State Types
-
-- UI state
-- Global state
-- Derived state
-
-Transient vs Persistent State
-
----
-
-## Key Principles of Performance in Hybrid State Management
-
-Minimizing State Redundancy and Overfetching
-Reducing UI Renders by Efficient State Handling
-Ensuring Smooth Data Flow Between Local and Global State
+| **State Type**    | **Scope**                | **Example**                                      |
+| ----------------- | ------------------------ | ------------------------------------------------ |
+| **UI State**      | Localized, per component | Modal open/close, hover state, active tabs       |
+| **Global State**  | Shared across components | User authentication, theme, notifications        |
+| **Derived State** | Calculated, not stored   | Filtered lists, computed totals, isAuthenticated |
 
 ---
 
 ## State Management Strategies
 
-### Managing Local and Global State
+### Local State Structure
 
-- Use Local State for Component-Specific Data
-- Leverage React Context Sparingly
-- Split State Across Components
+Choosing the right structure for local state is essential for performance and maintainability. There are some principles to organize state effectively:
+
+1. **Keep State as Close as Possible to Where It’s Used**
+
+   - Place state in the component that directly needs it.
+
+   - If multiple components need the same state, lift it to their nearest common parent.
+
+2. **Avoid Deeply Nested State**
+
+   - Prefer flat structures over deeply nested ones to make updates simpler.
+
+When updating nested object state
+
+```jsx
+const [state, setState] = React.useState({ user: { name: "", age: "" } })
+
+setState(prev => ({
+  ...prev,
+  user: { ...prev.user, name: "Frank" }
+}))
+```
+
+After flattening state structure, it become more easier
+
+```jsx
+const [userName, setUserName] = React.useState("")
+const [userAge, setUserAge] = React.useState("")
+
+setUserName("Frank")
+```
+
+3. **Separate Independent State**
+
+Each state should have its own role or meaning.
+Split unrelated state variables to avoid unnecessary re-renders.
+
+4. **Avoid Redundant and Duplication in State**
+
+When the same data is duplicated between multiple state variables, or within nested objects, it is difficult to keep them in sync.
+Reduce duplication when you can.
+
+If you can extract some information from the component’s state during rendering, you should not put that information into separate state.
+That is deriving state from existing state.
+For example, instead of storing computed or filter data, derive it from original state. You can use memorization to optimize performance when necessary
+
+### Leverage React Context Sparingly
+
+With React context, we can significantly import the performance and maintainability of the project when used correctly.
+It's important to apply the right scenarios and combine it with best practices to ensure it improve both state management and performance
+
+By using React Context, it can enhance there aspects:
+
+1. **Avoid Prop Drilling**
+
+Without React Context, you would need to pass props down through many components, which can lead to prop drilling.
+Prop drilling can be a maintenance nightmare, especially in large applications, as any changes to a shared piece of state would require passing it down through every intermediate component.
+
+How Context improves this:
+
+- Global Access: React Context allows you to define shared state at a higher level and make it available to all descendants without needing to pass props down manually.
+- Centralized State: it helps manage the state of commonly shared data in centralized way, make the code cleaner and easier to manage.
+
+Example (Authentication Context):
+
+```jsx
+const AuthContext = React.createContext()
+
+function App() {
+  const [user, setUser] = React.useState(null)
+
+  const login = (username, password) => {
+    // Simulate authentication
+    setUser({ username })
+  }
+
+  const logout = () => setUser(null)
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      <Header />
+      <Main />
+    </AuthContext.Provider>
+  )
+}
+
+function Header() {
+  const { user, logout } = React.useContext(AuthContext)
+  return (
+    <header>
+      {user ? (
+        <div>
+          <p>Welcome, {user.username}</p>
+          <button onClick={logout}>Logout</button>
+        </div>
+      ) : (
+        <p>Please login</p>
+      )}
+    </header>
+  )
+}
+```
+
+**Challenges**
+
+Although React Context help avoid prop drilling, it can lead to performances issues if not implemented correctly. Here's why:
+
+- Re-renders triggered by context changes: everytime a context value changes, all comsumer of that context will re-render, regardless of whether they need the updated value.
+  If the context is consumed by many components, it can lead to a cascade of re-renders, especially in large component tree.
+- Expensive Components Re-rendering: component which are expensive to re-render may see the significant degrade in performance.
+
+To optimize performance when using Context, we can:
+
+1. **Memorize the Context Value**
+
+Use `useMemo` to prevent unnecessary re-renders of the context value, this ensures that the context value remains stable across render unless explicitly changed.
+
+Example:
+
+```jsx
+const ThemeContext = React.createContext()
+
+function App() {
+  const [theme, setTheme] = React.useState("light")
+
+  // Memoize to prevent unnecessary re-renders
+  const themeValue = React.useMemo(() => ({ theme, setTheme }), [theme])
+
+  return (
+    <ThemeContext.Provider value={themeValue}>
+      <Header />
+      <Footer />
+    </ThemeContext.Provider>
+  )
+}
+```
+
+2. **Avoid Frequent Context Updates**
+
+Use local state (via useState or useReducer) for such rapidly changing, component-specific data.
+This prevents the need for context updates, as the state can be scoped to a specific component.
+
+Reserve Context for global or infrequent changes (e.g., user authentication, theme, or language preferences) where the data needs to be accessible across many components.
+
+### Split State Across Components
+
+Avoid centralizaing all state in a single component or store. Instead, distribute state across the application.
+This techinique ensures that updates to one part of the state do not impact unrelated components, improing performance and maintainability.
+
+- Localize State: Keep state within the component that directly needs it to reduce complexity and unnecessary re-renders.
+- Lift State Up: When state needs to be shared, lift it up to the nearest common ancestor and pass it down as props.
+- Use Context for Global State: Utilize Context for global data shared across many components, such as authentication or theme.
+- Split Complex State: Break down complex states into smaller, manageable pieces for better clarity and flexibility.
+- Custom Hooks: Encapsulate shared state management logic in custom hooks for reusability and separation of concerns.
+
+```jsx
+function Page() {
+  const [submitInfo, setSubmitInfo] = useState(undefined)
+  const handleSubmit = submitData => {
+    setSubmittedInfo(submitData)
+  }
+  return (
+    <>
+      <ExpensiveComponent data={submittedInfo} />
+      <RegisterForm onSubmit={handleSubmit} />
+    </>
+  )
+}
+
+function RegisterForm({ onSubmit }) {
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    password: ""
+  })
+  const handleChangeForm = (value, key) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      [key]: value
+    }))
+  }
+
+  return (
+    <form onSubmit={() => onSubmit(user)}>
+      <input name="email" onChange={e => handleChangeForm(e.target.value, "email")} />
+      <input name="name" onChange={e => handleChangeForm(e.target.value, "name")} />
+      <input name="password" onChange={e => handleChangeForm(e.target.value, "password")} />
+    </form>
+  )
+}
+```
+
+In the provided example, we have two main components:
+
+    - ``ExpensiveComponent``: a component that is computationally expensive to render.
+    - ``RegisterForm``: a form where users input their information.
+
+    When you type in the form fields (name, email, password) within ``RegisterForm``, the goal is to prevent unnecessary re-renders of ExpensiveComponent.
+    ``ExpensiveComponent`` only re-render when the user submit the form.
 
 ### Minimizing Re-renders and Optimizing Component Rendering
 
-- Memoize Components and Hooks
-- Optimize Rendering Performance
-- Identifying and Preventing Unnecessary Re-renders
+**Memoize Components and Hooks**
+
+Memoization is a technique used to cache the result of a computation so that it does not need to be recalculated on subsequent renders unless its inputs change.
+React provides tools like `memo`, `useMemo`, and `useCallback` for memoization.
+
+- `memo` prevents a component from re-rendering unless its props change.
+  This is especially useful for components that receive stable or rarely updated props.
+
+- `useMemo` optimizes performance by memoizing the result of expensive calculations.
+  It only recalculates the result if its dependencies change.
+
+- `useCallback` ensures that a function retains the same reference across renders unless its dependencies change.
+
+**Identifying and Preventing Unnecessary Re-renders**
+
+1. **React Developer Tools**:
+   User React Developer Tooks to monitor component re-renders and identify unnecessary updates. Look for:
+
+   - Components re-rendering without props or states changes.
+
+   - High-frequency updates causing performance bottleneck.
+
+2. **Avoid Inline Objects and Functions as Props**:
+   Inline objects and functions create new references on every render, causing re-renders in child components.
+
+Example
+
+```jsx
+// Example to avoid
+<ChildComponent style={{ color: 'red' }} onClick={() => console.log('clicked')} />
+
+
+// Solution
+const styles = {color: 'red'}
+const handleClick = useCallback(() => console.log('clicked'), [])
+
+<ChildComponent style={styles} onClick={handleClick} />
+```
 
 ### Consider Server-Side Rendering
 
-- SSR and Hydration
-- State management on the server
+Server-Side Rendering (SSR) is a technique where an application's HTML is generated on the server and sent to the client, rather than relying on client-side JavaScript to render the UI.
+Use frameworks like Next.js for server-side rendering to boost initial page load speed. Using SSR can reduce state management on the client, make it more simpler to handle.
+
+**Initial State Hydration**
+
+In SSR, the server renders the initial HTML and often provides a serialized version of the initial application state. This state is sent to the client and "hydrated" to make the application interactive.
+
+The hydration process involves attaching event listeners to the already-rendered HTML on the client.
+
+**Data Fetching and Preloading**
+
+The server must fetch and preload all necessary data before rendering the application.
+This data is included in the HTML payload sent to the client, so the client has all the required information without additional requests.
+
+**Benefits of SSR for State Management**
+
+1. Improved Performance
+
+- The server renders the initial HTML, allowing the user to see content faster, even before JavaScript is fully loaded.
+- Reduces the time to the first meaningful paint
+
+2. SEO Optimization
+
+- Search engines can crawl and index the fully rendered HTML, improving search engine rankings.
+
+3. Initial State Consistency
+
+- The server provides a consistent initial state, reducing the risk of mismatch between the server-rendered HTML and the client-rendered React tree.
+
+```jsx
+// A Server Component
+export default async function PostsPage() {
+  const posts = await fetchPosts() // Fetch data on the server
+  return (
+    <div>
+      <h1>Posts</h1>
+      <ul>
+        {posts.map(post => (
+          <li key={post.id}>
+            <strong>{post.title}</strong>
+            <p>{post.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+async function fetchPosts() {
+  const response = await fetch("https://example.com/posts")
+  return response.json()
+}
+```
+
+This is an example of server component using **Next.js 14**. In this component, no client-side JavaScript is needed for this page, improving performance and reducing bunlde size.
 
 ---
 
 ## Best Practices
 
-### State Management Strategy
+### Integrate With State Management Libraries
 
-- Define State Boundaries
-- State Management Libraries
+As your React application grows, managing state across multiple components and efficiently synchronizing it across your app becomes increasingly complex.
+Integrating state management libraries can offer more advanced patterns, better scalability, and powerful tools for larger applications.
 
-### Monitor and Optimize Performance
+Here's a list about popular state management libraries with React:
 
-- React Developer Tools
-- Profiling
+| **Library**     | Introduction                                                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Redux**       | A widely-used library that manages state globally using a single store. It's ideal for large-scale applications where state is shared across many components.       |
+| **Recoil**      | A modern, minimalistic alternative to Redux. It allows state management with a more flexible, atomic approach.                                                      |
+| **Zustand**     | A lightweight state management library that is much simpler than Redux but still provides a powerful API to manage shared state.                                    |
+| **MobX**        | A reactive state management library that automatically tracks and updates the UI based on changes in state, ideal for applications with complex state interactions. |
+| **React Query** | While primarily focused on server-state management, React Query can be used alongside other libraries to manage server-side data and caching.                       |
+
+### Managing Compound Components Internal State with Context
+
+Using React Context to manage internal state in compound components can be a powerful approach.
+The idea is to isolate state management within a component family, making it easy to manage and share state between related components without passing props manually between them.
+
+By using Context , we can easily centralized state management, avoid props drilling.
+
+For example, here is a example about using Context in Radio Group component:
+
+```jsx
+// create context for managing the open state of component
+const AccordionContext = createContext()
+
+// Custom hook to access context values
+const useAccordion = () => useContext(AccordionContext)
+
+const AccordionProvider = ({ children }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const toggleItem = index => {
+    setIsExpanded(prev => !prev)
+  }
+  return (
+    <AccordionContext.Provider value={{ expandedIndex, toggleItem }}>
+      {children}
+    </AccordionContext.Provider>
+  )
+}
+
+const Accordion = ({ children }) => {
+  return <AccordionProvider>{children}</AccordionProvider>
+}
+
+const AccordionTitle = ({ children }) => {
+  const { toggleItem } = useAccordion()
+  return (
+    <div onClick={toggleItem} style={{ cursor: "pointer" }}>
+      {children}
+    </div>
+  )
+}
+
+const AccordionItem = ({ children }) => {
+  const { isExpanded } = useAccordion()
+  if (!isExpanded) return null
+  return <div>{children}</div>
+}
+
+export const App = () => {
+  return (
+    <Accordion>
+      <AccordionTitle>Accordion Title</AccordionTitle>
+      <AccordionItem>Accordion Content</AccordionItem>
+    </Accordion>
+  )
+}
+```
+
+The internal state (`isExpanded`) is managed in the `AccordionContext`, which avoids prop drilling and reduces the complexity of managing local state across many components.
+
+---
+
+### Considerations Before Creating a State in React
+
+Carefully defining state and its coverage is a fundamental best practice in React.
+
+1. **Do You Really Need a State?**
+
+   Not every piece of data needs to be stored in state. Some data can be derived or passed down as props instead
+   Always ask yourself:
+
+   - Is this data dynamic?
+   - Can this data be computed?
+
+2. **Define State Coverage**: State should be scoped to the smallest possible component tree that needs it.
+
+   - Which components need to read or update this state?
+   - Can this state be managed locally, or does it need to be shared?
+
+3. **Determine the Type of State**: UI State, Global State, Derived State Persistent State or Server State
+
+4. **How Will the State Change?**
+
+   Understanding how the state evolves over time can help in selecting the right tools or patterns:
+
+   - For simple changes, useState works well.
+   - For complex transitions (e.g., multiple actions on a single state), consider useReducer.
+   - For asynchronous updates (e.g., server requests), think about how you'll handle loading and error states.
+
+5. **What performance impacts could it have?**
+
+   - Split State by Responsibility: Instead of a single state object, use multiple states if different pieces are updated independently.
+   - Memoize Derived Data: Use useMemo to prevent recalculations.
+   - Keep State Local: If only one component needs the state, don’t lift it unnecessarily.
 
 ---
 
 ## Conclusion
 
-Recap
-Performance Best Practices
+Hybrid state management combines local and global state for better performance and scalability.
+Performance can be optimized by reducing redundancy, overfetching, and unnecessary renders.
+
+---
+
+## References
+
+https://react.dev/learn/choosing-the-state-structure
