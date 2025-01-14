@@ -43,77 +43,54 @@ But it had their limitations:
 The server stored all session data (e.g., user ID, permissions) and associated it with the session
 ID.
 
-<b>Drawbacks:</b>
-<ul>
-  <li>
-    <b>Scalability:</b> Storing sessions on the server meant more resource consumption as the user
-    base grew.
-  </li>
-  <li>
-    <b>Distributed Systems:</b> Sessions needed synchronization between servers in load-balanced
-    environments, requiring complex setups (e.g., sticky sessions or centralized session stores like
-    Redis).
-  </li>
-  <li>
-    <b>Revocation Complexity:</b> Managing session invalidation for logout or security purposes was
-    challenging.
-  </li>
-</ul>
+**Drawbacks:**
+
+- **Scalability:** Storing sessions on the server meant more resource consumption as the user
+  base grew.
+
+- **Distributed Systems:** Sessions needed synchronization between servers in load-balanced
+  environments, requiring complex setups (e.g., sticky sessions or centralized session stores like
+  Redis).
+
+- **Revocation Complexity:** Managing session invalidation for logout or security purposes was
+  challenging.
 
 ### 2. Cookies Problems ?
 
 Cookies stored session data on the client side, with the server validating the session ID.
 
-<b>Drawbacks:</b>
-<ul>
-  <li>
-    <b>Vulnerable to XSS/CSRF:</b> Cookies could be intercepted or forged if not properly secured.
-  </li>
-  <li>
-    <b>Limited Storage:</b> Cookies had a 4KB size limit, restricting what could be stored.
-  </li>
-</ul>
+**Drawbacks:**-**Vulnerable to XSS/CSRF:** Cookies could be intercepted or forged if not
+properly secured. -**Limited Storage:** Cookies had a 4KB size limit, restricting what could be
+stored.
 
 ### 3. HTTP Basic Authentication Problems ?
 
 User credentials (username and password) were sent with every request in the Authorization header.
 
-<b>Drawbacks:</b>
-<ul>
-  <li>
-    <b>Insecure:</b> Repeatedly transmitting credentials increased the risk of interception, even
-    with HTTPS.
-  </li>
-  <li>
-    <b>User Experience:</b> Required constant re-authentication or browser pop-ups for credential
-    input.
-  </li>
-  <li>
-    <b>Sessionless:</b> No support for "remember me" or session persistence.
-  </li>
-</ul>
+**Drawbacks:**
+
+- **Insecure:** Repeatedly transmitting credentials increased the risk of interception, even with
+  HTTPS.
+
+- **User Experience:** Required constant re-authentication or browser pop-ups for credential
+  input.
+
+- **Sessionless:** No support for "remember me" or session persistence.
 
 ### 4. JWT Is Preferred Over Older Methods
 
 JWTs addressed many of the issues with previous approaches:
 
-<ul>
-  <li>
-    <b>Statelessness:</b> Tokens are self-contained; no server-side storage is required.
-  </li>
-  <li>
-    <b>Scalability:</b> Simplifies distributed systems since the token itself carries all necessary
-    data.
-  </li>
-  <li>
-    <b>Interoperability:</b> Standardized format (JSON) makes it easy to integrate across systems
-    and platforms.
-  </li>
-  <li>
-    <b>Security:</b> When used with best practices (e.g., signing, encryption), JWTs provide robust
-    authentication and authorization.
-  </li>
-</ul>
+- **Statelessness:** Tokens are self-contained; no server-side storage is required.
+
+- **Scalability:** Simplifies distributed systems since the token itself carries all necessary
+  data.
+
+- **Interoperability:** Standardized format (JSON) makes it easy to integrate across systems and
+  platforms.
+
+- **Security:** When used with best practices (e.g., signing, encryption), JWTs provide robust
+  authentication and authorization.
 
 ## What is a JWT Token ?
 
@@ -231,7 +208,7 @@ authentication, where user sessions are stored on the server. However, as the pl
 approach began to show significant limitations, even though it can become a bottleneck as the user
 base grows
 
-<b>Solution with JWT:</b> JWTs are stateless and do not require server-side storage. The token
+**Solution with JWT:** JWTs are stateless and do not require server-side storage. The token
 itself carries all the necessary data for authentication, allowing seamless scaling across
 distributed systems.
 
@@ -241,7 +218,7 @@ A growing SaaS company offers a multi-tenant platform used by thousands of
 businesses. As their user base expands, they face escalating costs in managing authentication and
 session storage due to traditional session-based authentication.
 
-<b>Solution with JWT:</b> By removing the dependency on session storage, JWTs reduce infrastructure
+**Solution with JWT:** By removing the dependency on session storage, JWTs reduce infrastructure
 costs and simplify system architecture.
 
 ### Security Concerns
@@ -252,7 +229,7 @@ banking platform where users perform sensitive transactions like fund transfers 
 management. The platform initially uses traditional session-based authentication. However, the
 company encounters significant security risks
 
-<b>Solution with JWT:</b> Tokens are signed and optionally encrypted, ensuring integrity and
+**Solution with JWT:** Tokens are signed and optionally encrypted, ensuring integrity and
 confidentiality. They can include short expiration times and support mechanisms like refresh tokens
 to minimize risks.
 
@@ -263,7 +240,7 @@ web, mobile apps (iOS and Android), and APIs for third-party integrations. They 
 consistent authentication across all platforms due to differing technologies and session management
 requirements.
 
-<b>Solution with JWT:</b> JWT solves cross-platform compatibility pain points by offering a
+**Solution with JWT:** JWT solves cross-platform compatibility pain points by offering a
 standardized, portable, and secure authentication method that works seamlessly across web, mobile,
 and API environments.
 
@@ -274,7 +251,7 @@ multiple devices, including web, mobile, smart TVs, and gaming consoles. Custome
 seamless authentication, but traditional methods create friction, leading to frustration and
 drop-offs.
 
-<b>Solution with JWT:</b> JWTs can support single sign-on (SSO) and allow users to remain logged in
+**Solution with JWT:** JWTs can support single sign-on (SSO) and allow users to remain logged in
 across multiple devices and services until the token expires.
 
 ## Challenges and Limitations of JWT
@@ -285,13 +262,13 @@ While JWTs offer many benefits, they also come with challenges and limitations t
 
 JWTs can become significantly larger than traditional session IDs because they contain headers,
 payloads, and cryptographic signatures. If you use the JSON Compact Serialized format (most common format),
-you have to keep in mind that it should be as short as possible because it is mainly used in a web context. A <b>4kb</b> JWT is something that you should avoid.
+you have to keep in mind that it should be as short as possible because it is mainly used in a web context. A **4kb** JWT is something that you should avoid.
 
-<b>Impact:</b>
-<ul>
-  <li>Increases bandwidth usage, especially in systems with frequent requests.</li>
-  <li>May impact performance over slow networks (e.g., mobile or IoT).</li>
-</ul>
+**Impact:**
+
+- Increases bandwidth usage, especially in systems with frequent requests.
+
+- May impact performance over slow networks (e.g., mobile or IoT).
 
 ### Revocation Complexity
 
@@ -301,11 +278,11 @@ revoked before the expiration time of their JWT token. In this case, the resourc
 of knowing that the token has been revoked. It will continue to accept the token as valid until it
 expires, potentially allowing unauthorized access to protected resources.
 
-<b>Impact:</b>
-<ul>
-  <li>If a JWT is compromised, it remains valid until it expires.</li>
-  <li>May impact performance over slow networks (e.g., mobile or IoT).</li>
-</ul>
+**Impact:**
+
+- If a JWT is compromised, it remains valid until it expires.
+
+- May impact performance over slow networks (e.g., mobile or IoT).
 
 ### Expiration and Rotation
 
@@ -315,14 +292,12 @@ important to ensure a smooth transition without disrupting the user experience. 
 periodically updating the signing key helps enhance security and mitigate the impact of a
 compromised key.
 
-<b>Impact:</b>
-<ul>
-  <li>
-    Short-lived tokens enhance security but require refresh tokens, adding complexity to token
-    rotation.
-  </li>
-  <li>Long-lived tokens increase security risks if they are compromised.</li>
-</ul>
+**Impact:**
+
+- Short-lived tokens enhance security but require refresh tokens, adding complexity to token
+  rotation.
+
+- Long-lived tokens increase security risks if they are compromised.
 
 ### Security Risk
 
@@ -330,20 +305,15 @@ In the world of web security, JSON Web Tokens (JWTs) play a pivotal in role in m
 authentication and maintaining session information. However, the security of JWTs is only as robust
 as the mechanisms and practices employed to handle them.
 
-<b>Impact:</b>
-<ul>
-  <li>
-    <b>Token Tampering:</b> Without proper signature verification, JWTs can be altered by attackers.
-  </li>
-  <li>
-    <b>Algorithm Confusion:</b> Misconfiguration of signing algorithms (e.g., using "none") can lead
-    to vulnerabilities.
-  </li>
-  <li>
-    <b>Sensitive Data Exposure:</b> Claims stored in the payload can be decoded easily if not
-    encrypted, exposing sensitive information.
-  </li>
-</ul>
+**Impact:**
+
+- **Token Tampering:** Without proper signature verification, JWTs can be altered by attackers.
+
+- **Algorithm Confusion:** Misconfiguration of signing algorithms (e.g., using "none") can lead
+  to vulnerabilities.
+
+- **Sensitive Data Exposure:** Claims stored in the payload can be decoded easily if not
+  encrypted, exposing sensitive information.
 
 ### Compatibility
 
@@ -352,14 +322,67 @@ applications. However, integrating JWTs into existing systems or across diverse 
 present compatibility challenges. These issues often arise in legacy systems, heterogeneous
 ecosystems, and when dealing with varying standards and protocols.
 
-<b>Impact:</b>
-<ul>
-  <li>May require additional middleware or libraries to handle JWTs in legacy systems.</li>
-  <li>
-    Compatibility issues can arise when integrating JWTs into systems with different encryption
-    standards.
-  </li>
-</ul>
+**Impact:**
+
+- May require additional middleware or libraries to handle JWTs in legacy systems.
+
+- Compatibility issues can arise when integrating JWTs into systems with different encryption
+  standards.
+
+## What Happens if Your JSON Web Token is Stolen?
+
+It's really bad if JWTs are stolen, because an attacker has full access to the user’s account in the same way they would if the attacker had instead compromised the user’s username and password.
+
+For instance, if an attacker gets ahold of your JWT, they could start sending requests to the server identifying themselves as you and do things like make service changes,
+user account updates, etc. Once an attacker has your JWT it is game over.
+
+**BUT**, there is one thing that makes a stolen JWT slightly less bad than a stolen username and
+password: timing. Because JWTs can be configured to automatically expire after a set amount of time
+(a minute, an hour, a day, whatever), attackers can only use your JWT to access the service until it
+expires.
+
+In theory, that sounds great, right? One of the ways token authentication is said to make authentication more “secure” is via short-lived tokens.
+That’s one of the core reasons token-based authentication has really taken off in recent years: you can automatically expire tokens and mitigate the risk of relying on forever-cached “stateless” tokens.
+
+In the security world, after all, relying on cached data to make sensitive decisions like who can log into a service and what they can do is considered a bad thing. Because tokens are stateless and allow for some speed improvements over traditional session authentication, the only way in which they can remain somewhat “secure” is by limiting their lifespan so they don’t cause too much harm when compromised.
+
+The only problem here is that if an attacker was able to steal your token in the first place, they’re likely able to do it once you get a new token as well. The most common ways this happens is by man-in-the-middling (MITM) your connection or getting access to the client or server directly. And unfortunately, in these scenarios, even the shortest-lived JWTs won’t help you at all.
+
+Another interesting thing to consider is that ** in some cases, a stolen JWT can actually be worse than a stolen username and password. **
+
+Let’s pretend, for a moment, that your username and password have been compromised. In this scenario, if the app you’re logging into is protected with multi-factor authentication, an attacker needs to bypass additional identity proofing mechanisms in order to gain access to your account.
+
+While guessing or brute-forcing a username and password is a very realistic scenario, being able to compromise a user’s mutli-factor authentication setup can be quite difficult. Bypassing factors like app-based authorization, SMS verification, face ID, touch ID, etc., is a significantly more challenging than guessing a user’s password.
+
+Because of this, a compromised JWT can actually be a greater security risk than a compromised username and password. Imagine the scenario above where the app a user logs into is protected by multi-factor authentication. Once the user logs in and verifies themselves via multi-factor, they are assigned a JWT to prove who they are. If that JWT is stolen, the attacker no longer needs to bypass MFA directly (like they would have to if they only had the user’s username and password)—they can now directly make requests as the user without additional identity proofing. Quite a big risk.
+
+## What To Do If Your JWT Is Stolen
+
+Here are a number of steps to take if a client’s token has been stolen. These recommendations are not suitable for every type of app, but should provide you with some good ideas to help you recover from this security incident:
+
+- **Revoke compromised tokens immediately.** If you’re using a revocation list on your server
+  to invalidate tokens, revoking a token can instantly boot the attacker out of your system until
+  they get hold of a new token. While it is a temporary solution, it will make the attacker’s life
+  slightly more difficult.
+
+- **Force your client to change their password immediately.** In the context of a web or mobile
+  app, force your user to reset their password immediately, preferably through some sort of
+  multi-factor authentication flow like the ones Okta provides. Forcing a user to change their
+  password can potentially keep attackers out of their account in the event that an attacker tries
+  to use a compromised token to modify user login credentials. By requiring multi-factor
+  authentication, you can have more confidence that the user resetting their credentials is who they
+  say they are and not an attacker.
+
+- **Inspect the client’s environment.** Was the user’s phone stolen so an attacker has access
+  to their pre-authenticated mobile app? Was the client accessing your service from a compromised
+  device like a mobile phone or infected computer? Discovering how the attacker got a hold of the
+  token is the only way to fully understand what went wrong.
+
+- **Inspect your server-side environment.** Was an attacker able to compromise the token from
+  your end? If so, this might involve a lot more work to fix, but the earlier you get started the
+  better.
+
+Once you’ve gone through these steps, you should hopefully have a better understanding of how the token was compromised and what needs to be done to prevent it from happening in the future.
 
 ## Conclusion
 
