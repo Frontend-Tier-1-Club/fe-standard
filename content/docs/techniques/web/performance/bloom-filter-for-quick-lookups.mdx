@@ -29,30 +29,30 @@ An array is a simple data structure but requires O(n) time for lookups unless pr
 ```
 **Complexity Analysis**:
 * Time Complexity:
-  - Worst Case: O(n), where n is the length of the array.
-  - Best case: O(1) when matching with the first item.
+  - Worst Case: **O(n)**, where n is the length of the array.
+  - Best case: **O(1)** when matching with the first item.
 
-* Space Complexity: O(1) 
+* Space Complexity: **O(1)** 
 
 ### 2. **Hash maps/ Objects**
 
-We store all usernames in a hash set. Hash Map is great for direct key-value lookups with O(1) average time complexity.
+We store all usernames in a hash set. Hash Map is great for direct key-value lookups with **O(1)** average time complexity.
 ```javascript
   const hashMap = new Map();
   hashMap.set("Alice", { age: 25 });
   hashMap.set("Bob", { age: 30 });
 
-  console.log(hashMap.has("Alice"));
-  console.log(hashMap.get("Alice")); 
-  console.log(hashMap.has("Charlie")); 
+  console.log(hashMap.has("Alice")); // true
+  console.log(hashMap.get("Alice")); // { age: 25 }
+  console.log(hashMap.has("Charlie")); // false
 ```
 **Complexity Analysis**:
 * Time Complexity:
-  - Lookup: O(1) on average for both Map and plain objects
-  - Initialization: O(n) for populating the map or object with n items.
+  - Lookup: **O(1)** on average for both Map and plain objects
+  - Initialization: **O(n)** for populating the map or object with n items.
 
 * Space Complexity:
-  -  O(n) for storing n items in the map or object.
+  -  **O(n)** for storing n items in the map or object.
 
 ### 3. **Tries/ Prefix Trees**
 
@@ -148,24 +148,24 @@ A Trie (also called a Prefix Tree) is a tree-like data structure that is used fo
 * Time Complexity:
 
   **Insertion**
-    - Complexity: O(L), where L is the length of the string being inserted.
+    - Complexity: **O(L)**, where L is the length of the string being inserted.
   
   **Search**
-    - Complexity: O(L), where L is length of string being searched
+    - Complexity: **O(L)**, where L is length of string being searched
 
   **Prefix Search (Starts-with)**
-    - Complexity: O(L + K), where:
+    - Complexity: **O(L + K)**, where:
       - L: Length of prefix
       - K: Total number of nodes visited to collect matching results.
 
   **Deletion**
-    - Complexity: O(L), where L is the length of the string being deleted
+    - Complexity: **O(L)**, where L is the length of the string being deleted
 
 * Space Complexity:
-  - O(A * L * N), where:
-    * A: Size of the alphabet (number of possible characters).
-    * L: Average length of the strings stored.
-    * N: Number of strings in the Trie.
+  - **O(A * L * N)**, where:
+    * **A**: Size of the alphabet (number of possible characters).
+    * **L**: Average length of the strings stored.
+    * **N**: Number of strings in the Trie.
 
 ### Large data problem and why bloom filter
 We can see that traditional data structures like hash tables or Tries can consume a significant amount of memory, especially for large datasets.
@@ -174,14 +174,54 @@ So, this article introduce to you a data structure can work wellin these cases: 
 ## Bloom filter: Abstract
 A bloom filter is a probabilistic data structure that is based on hashing. It is extremely space efficient and is typically used to add elements to a set and test if an element is in a set. Though, the elements themselves are not added to a set. Instead a hash of the elements is added to the set.
 
-When testing if an element is in the bloom filter, false positives are possible. It will either say that an element is definitely not in the set or that it is possible the element is in the set.
+When testing if an element is in the bloom filter, **false positives are possible**. It will either say that an element is definitely not in the set or that it is possible the element is in the set.
 
 ## Algorithm description
-An empty Bloom filter is a bit array of m bits, all set to 0. It is equipped with k different hash functions, which map set elements to one of the m possible array positions.
+An empty Bloom filter is a **bit array of m bits, all set to 0**. It is equipped with **k different hash functions**, which map set elements to one of the m possible array positions.
 
 To add an element, feed it to each of the k hash functions to get k array positions. Set the bits at all these positions to 1.
 
-To test whether an element is in the set, feed it to each of the k hash functions to get k array positions. If any of the bits at these positions is 0, the element is definitely not in the set; if it were, then all the bits would have been set to 1 when it was inserted. If all are 1, then either the element is in the set, or the bits have by chance been set to 1 during the insertion of other elements, resulting in a false positive.
+Let's see the how we set up the algorithm:
+
+Assume that we have a bit array m = 8 bits, all set to zero:
+```
+[0, 0, 0, 0, 0, 0, 0, 0]
+``` 
+
+We need k hash function h1(x), h2(x), h3(x), ... hk(x) to calculate the hashes for a given input **x**. Assume that we have k = 3:
+```
+h1(x) = 3
+h2(x) = 5
+h3(x) = 7
+```
+
+When we add an element **x** to the Bloom filter, we calculate the hash values and set the corresponding bits to 1, with 3, 5 and 7 is position of the bit array:
+```
+[0, 0, 0, 1, 0, 1, 0, 1]
+```
+
+Again we want to enter **y** into the Bloom filter, we calculate the hash values:
+```
+h1(y) = 2
+h2(y) = 4
+```
+and set the corresponding bits to 1:
+```
+[0, 0, 1, 1, 1, 1, 0, 1]
+```
+
+Now, we want to check whether **x** is in the Bloom filter or not. We calculate respective hashes using h1, h2 and h3 and check if all these indices are set to 1 in the bit array.
+If all the bits are set then we can say that **x** is **probably present**. If any of the bit at these indices are 0 then **x** is definitely not present.
+
+We calculate the hash values:
+```
+h1(x) = 3
+h2(x) = 5
+h3(x) = 7
+```
+
+Look in to the bit array we calculated before: position 3, 5 and 7 are all set to 1, so we can say that **x** is probably present in the Bloom filter.
+
 ## Probability of false positives
 The probability of false positives is a crucial aspect of Bloom filters. It's influenced by the size of the bit array (m), the number of hash functions (k), and the number of elements inserted (n).
 
@@ -239,147 +279,147 @@ A bloom filter is extremely efficient in both time and space usage.
 Below is example code to implement bloom filter:
 ```javascript
 class BloomFilter {
-  /**
-   * Creates a new Bloom filter.
-   * @param {number} expectedItems - The expected number of items to be added to the filter.
-   * @param {number} falsePositiveRate - The desired false positive rate (e.g., 0.01 for 1%).
-   */
-  constructor(expectedItems, falsePositiveRate) {
-    this.expectedItems = expectedItems;
-    this.falsePositiveRate = falsePositiveRate;
-
-    // Calculate the size of the bit array (m)
-    this.size = this.getSize(expectedItems, falsePositiveRate);
-
-    // Calculate the optimal number of hash functions (k)
-    this.hashCount = this.getHashCount(this.size, expectedItems);
-
-    // Initialize the bit array with all bits set to 0
-    this.bitArray = new Array(this.size).fill(0);
-  }
-
-  /**
-   * Calculates the size of the bit array (m) based on the expected number of items and the desired false positive rate.
-   * @param {number} n - The expected number of items.
-   * @param {number} p - The desired false positive rate.
-   * @returns {number} The size of the bit array.
-   */
-  getSize(n, p) {
-    const m = -(n * Math.log(p)) / (Math.log(2) ** 2);
-    return Math.ceil(m); // Round up to the nearest integer
-  }
-
-  /**
-   * Calculates the optimal number of hash functions (k) based on the size of the bit array and the expected number of items.
-   * @param {number} m - The size of the bit array.
-   * @param {number} n - The expected number of items.
-   * @returns {number} The optimal number of hash functions.
-   */
-  getHashCount(m, n) {
-    const k = (m / n) * Math.log(2);
-    return Math.ceil(k); // Round up to the nearest integer
-  }
-
-  /**
-   * Adds an item to the Bloom filter.
-   * @param {string} item - The item to add.
-   */
-  add(item) {
-    for (let i = 0; i < this.hashCount; i++) {
-      const hash = this.murmurhash3_32_gc(item, i) % this.size; // Use MurmurHash3 with different seeds
-      this.bitArray[hash] = 1;
+    /**
+     * Creates a new Bloom filter.
+     * @param {number} expectedItems - The expected number of items to be added to the filter.
+     * @param {number} falsePositiveRate - The desired false positive rate (e.g., 0.01 for 1%).
+     */
+    constructor(expectedItems, falsePositiveRate) {
+      this.expectedItems = expectedItems;
+      this.falsePositiveRate = falsePositiveRate;
+   
+      // Calculate the size of the bit array (m)
+      this.size = this.getSize(expectedItems, falsePositiveRate);
+   
+      // Calculate the optimal number of hash functions (k)
+      this.hashCount = this.getHashCount(this.size, expectedItems);
+   
+      // Initialize the bit array with all bits set to 0
+      this.bitArray = new Array(this.size).fill(0);
     }
-  }
-
-  /**
-   * Checks if an item is possibly in the Bloom filter.
-   * @param {string} item - The item to check.
-   * @returns {boolean} True if the item is probably in the set, false if it's definitely not.
-   */
-  check(item) {
-    for (let i = 0; i < this.hashCount; i++) {
-      const hash = this.murmurhash3_32_gc(item, i) % this.size;
-      if (this.bitArray[hash] === 0) {
-        return false; // Definitely not in the set
+   
+    /**
+     * Calculates the size of the bit array (m) based on the expected number of items and the desired false positive rate.
+     * @param {number} n - The expected number of items.
+     * @param {number} p - The desired false positive rate.
+     * @returns {number} The size of the bit array.
+     */
+    getSize(n, p) {
+      const m = -(n * Math.log(p)) / (Math.log(2) ** 2);
+      return Math.ceil(m); // Round up to the nearest integer
+    }
+   
+    /**
+     * Calculates the optimal number of hash functions (k) based on the size of the bit array and the expected number of items.
+     * @param {number} m - The size of the bit array.
+     * @param {number} n - The expected number of items.
+     * @returns {number} The optimal number of hash functions.
+     */
+    getHashCount(m, n) {
+      const k = (m / n) * Math.log(2);
+      return Math.ceil(k); // Round up to the nearest integer
+    }
+   
+    /**
+     * Adds an item to the Bloom filter.
+     * @param {string} item - The item to add.
+     */
+    add(item) {
+      for (let i = 0; i < this.hashCount; i++) {
+        const hash = this.murmurhash3_32_gc(item, i) % this.size; // Use MurmurHash3 with different seeds
+        this.bitArray[hash] = 1;
       }
     }
-    return true; // Probably in the set
-  }
-
-  /**
-   * A basic implementation of MurmurHash3 for 32-bit numbers (for demonstration purposes). 
-   * You might want to use a more robust library in a production environment.
-   * Source: https://github.com/garycourt/murmurhash-js
-   * @param {string} key - The input string to hash.
-   * @param {number} seed - The seed for the hash function.
-   * @returns {number} The 32-bit hash value.
-   */
-  murmurhash3_32_gc(key, seed) {
-    var remainder, bytes, h1, h1b, c1, c2, k1, i;
-
-    remainder = key.length & 3; // key.length % 4
-    bytes = key.length - remainder;
-    h1 = seed;
-    c1 = 0xcc9e2d51;
-    c2 = 0x1b873593;
-    i = 0;
-
-    while (i < bytes) {
-        k1 =
-          ((key.charCodeAt(i) & 0xff)) |
-          ((key.charCodeAt(++i) & 0xff) << 8) |
-          ((key.charCodeAt(++i) & 0xff) << 16) |
-          ((key.charCodeAt(++i) & 0xff) << 24);
-      ++i;
-
-      k1 = ((((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16))) & 0xffffffff;
-      k1 = (k1 << 15) | (k1 >>> 17);
-      k1 = ((((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16))) & 0xffffffff;
-
-      h1 ^= k1;
-          h1 = (h1 << 13) | (h1 >>> 19);
-      h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
-      h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
+   
+    /**
+     * Checks if an item is possibly in the Bloom filter.
+     * @param {string} item - The item to check.
+     * @returns {boolean} True if the item is probably in the set, false if it's definitely not.
+     */
+    check(item) {
+      for (let i = 0; i < this.hashCount; i++) {
+        const hash = this.murmurhash3_32_gc(item, i) % this.size;
+        if (this.bitArray[hash] === 0) {
+          return false; // Definitely not in the set
+        }
+      }
+      return true; // Probably in the set
     }
-
-    k1 = 0;
-
-    switch (remainder) {
-      case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
-      case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
-      case 1: k1 ^= (key.charCodeAt(i) & 0xff);
-
-      k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
-      k1 = (k1 << 15) | (k1 >>> 17);
-      k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
-      h1 ^= k1;
+   
+    /**
+     * A basic implementation of MurmurHash3 for 32-bit numbers (for demonstration purposes).
+     * You might want to use a more robust library in a production environment.
+     * Source: https://github.com/garycourt/murmurhash-js
+     * @param {string} key - The input string to hash.
+     * @param {number} seed - The seed for the hash function.
+     * @returns {number} The 32-bit hash value.
+     */
+    murmurhash3_32_gc(key, seed) {
+      var remainder, bytes, h1, h1b, c1, c2, k1, i;
+   
+      remainder = key.length & 3; // key.length % 4
+      bytes = key.length - remainder;
+      h1 = seed;
+      c1 = 0xcc9e2d51;
+      c2 = 0x1b873593;
+      i = 0;
+   
+      while (i < bytes) {
+          k1 =
+            ((key.charCodeAt(i) & 0xff)) |
+            ((key.charCodeAt(++i) & 0xff) << 8) |
+            ((key.charCodeAt(++i) & 0xff) << 16) |
+            ((key.charCodeAt(++i) & 0xff) << 24);
+        ++i;
+   
+        k1 = ((((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16))) & 0xffffffff;
+        k1 = (k1 << 15) | (k1 >>> 17);
+        k1 = ((((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16))) & 0xffffffff;
+   
+        h1 ^= k1;
+            h1 = (h1 << 13) | (h1 >>> 19);
+        h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
+        h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
+      }
+   
+      k1 = 0;
+   
+      switch (remainder) {
+        case 3: k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+        case 2: k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+        case 1: k1 ^= (key.charCodeAt(i) & 0xff);
+   
+        k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+        k1 = (k1 << 15) | (k1 >>> 17);
+        k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+        h1 ^= k1;
+      }
+   
+      h1 ^= key.length;
+   
+      h1 ^= h1 >>> 16;
+      h1 = (((h1 & 0xffff) * 0x85ebca6b) + ((((h1 >>> 16) * 0x85ebca6b) & 0xffff) << 16)) & 0xffffffff;
+      h1 ^= h1 >>> 13;
+      h1 = ((((h1 & 0xffff) * 0xc2b2ae35) + ((((h1 >>> 16) * 0xc2b2ae35) & 0xffff) << 16)) & 0xffffffff);
+      h1 ^= h1 >>> 16;
+   
+      return h1 >>> 0;
     }
-
-    h1 ^= key.length;
-
-    h1 ^= h1 >>> 16;
-    h1 = (((h1 & 0xffff) * 0x85ebca6b) + ((((h1 >>> 16) * 0x85ebca6b) & 0xffff) << 16)) & 0xffffffff;
-    h1 ^= h1 >>> 13;
-    h1 = ((((h1 & 0xffff) * 0xc2b2ae35) + ((((h1 >>> 16) * 0xc2b2ae35) & 0xffff) << 16)) & 0xffffffff;
-    h1 ^= h1 >>> 16;
-
-    return h1 >>> 0;
   }
-}
-
-// Example Usage:
-const bloomFilter = new BloomFilter(1000, 0.01); // Expected 1000 items, 1% false positive rate
-
-// Add some items
-bloomFilter.add("apple");
-bloomFilter.add("banana");
-bloomFilter.add("orange");
-
-// Check for membership
-console.log(bloomFilter.check("apple"));   // true (Probably)
-console.log(bloomFilter.check("grape"));   // false (Definitely)
-console.log(bloomFilter.check("banana"));  // true (Probably)
-console.log(bloomFilter.check("kiwi"));    // false (Definitely)
+   
+  // Example Usage:
+  const bloomFilter = new BloomFilter(1000, 0.01); // Expected 1000 items, 1% false positive rate
+   
+  // Add some items
+  bloomFilter.add("apple");
+  bloomFilter.add("banana");
+  bloomFilter.add("orange");
+   
+  // Check for membership
+  console.log(bloomFilter.check("apple"));   // true (Probably)
+  console.log(bloomFilter.check("grape"));   // false (Definitely)
+  console.log(bloomFilter.check("banana"));  // true (Probably)
+  console.log(bloomFilter.check("kiwi"));    // false (Definitely)
 ```
 
 ## Application of bloom filter in real life
