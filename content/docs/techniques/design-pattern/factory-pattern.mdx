@@ -1,6 +1,148 @@
 ---
-title: Factory Pattern
-description: Factory Pattern
+title: Factory Pattern 🏭
+description: Introduction to Factory Pattern
 ---
 
-Factory Pattern
+## Understanding the Factory Pattern
+
+### What is the Factory Pattern?
+
+The **Factory Pattern** is a creational design pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created. It's used when we have a superclass with multiple subclasses and based on input, we need to return one of the subclasses.
+
+### Key Components
+
+1. **Product**: An interface or abstract class defining the common interface of objects the factory method creates.
+2. **Concrete Products**: Classes that implement the Product interface.
+3. **Creator**: An abstract class that declares the factory method.
+4. **Concrete Creator**: A class that implements the factory method to create Concrete Product objects.
+
+### How It Works
+
+1. The client calls the factory method with certain parameters.
+2. The factory method creates and returns the appropriate object based on those parameters.
+3. The client uses the object without knowing its specific class.
+
+## Implementation Example
+
+Here's a JavaScript example demonstrating the Factory Pattern:
+
+```javascript
+// Product interface
+class Vehicle {
+  constructor(model) {
+    this.model = model
+  }
+
+  getDetails() {
+    throw new Error("Method 'getDetails()' must be implemented.")
+  }
+}
+
+// Concrete Products
+class Car extends Vehicle {
+  getDetails() {
+    return `Car: ${this.model}`
+  }
+}
+
+class Motorcycle extends Vehicle {
+  getDetails() {
+    return `Motorcycle: ${this.model}`
+  }
+}
+
+class Truck extends Vehicle {
+  getDetails() {
+    return `Truck: ${this.model}`
+  }
+}
+
+// Factory
+class VehicleFactory {
+  createVehicle(type, model) {
+    switch (type.toLowerCase()) {
+      case "car":
+        return new Car(model)
+      case "motorcycle":
+        return new Motorcycle(model)
+      case "truck":
+        return new Truck(model)
+      default:
+        throw new Error("Unknown vehicle type.")
+    }
+  }
+}
+
+// Usage
+const factory = new VehicleFactory()
+
+const car = factory.createVehicle("car", "Tesla Model S")
+const motorcycle = factory.createVehicle("motorcycle", "Honda Vision")
+const truck = factory.createVehicle("truck", "Ford F-150")
+
+console.log(car.getDetails())
+console.log(motorcycle.getDetails())
+console.log(truck.getDetails())
+
+// Trying to create an unknown vehicle type
+try {
+  const unknown = factory.createVehicle("boat", "Yacht")
+} catch (error) {
+  console.error(error.message)
+}
+```
+
+**Output:**
+
+```plaintext
+> "Car: Tesla Model S"
+> "Motorcycle: Honda Vision"
+> "Truck: Ford F-150"
+> "Unknown vehicle type"
+```
+
+In this example, we have a `Vehicle` interface and three concrete classes (`Car`, `Motorcycle`, and `Truck`) that implement it. The `VehicleFactory` class has a `createVehicle` method that returns the appropriate object based on the input type.
+
+## When to Use the Factory Pattern
+
+1. When you don't know ahead of time what class object you need.
+2. When you want to centralize the logic of object creation.
+3. When you want to provide a library of products and only reveal their interfaces, not their implementations.
+
+## Pros and Cons
+
+### Pros
+
+1. **Encapsulation**: The Factory Pattern encapsulates object creation logic, making it easier to manage and modify.
+2. **Flexibility**: It's easy to introduce new types of products without changing existing code.
+3. **Separation of Concerns**: It separates the code that creates objects from the code that uses them.
+4. **Loose Coupling**: The client code isn't tightly coupled to specific classes, only to the interface.
+
+### Cons
+
+1. **Complexity**: It can introduce unnecessary complexity for simple object creation scenarios.
+2. **Increased Number of Classes**: The pattern often requires creating many new subclasses, which can bloat the codebase.
+3. **Difficulty in Subclassing**: Extending factories can be challenging if they have many factory methods.
+
+## Best Practices
+
+1. Use meaningful and consistent naming conventions for your factory methods.
+2. Consider using static factory methods for simpler scenarios.
+3. Use abstract factories when you have families of related products.
+4. Implement proper error handling for unknown product types.
+
+## Related Patterns
+
+1. **Abstract Factory**: Provides an interface for creating families of related or dependent objects.
+2. **Builder**: Focuses on constructing complex objects step by step.
+3. **Prototype**: Creates new objects by copying an existing object, known as the prototype.
+
+## Conclusion
+
+The **Factory Pattern** is a powerful tool in object-oriented design, offering flexibility and maintainability in object creation. While it's not suitable for every scenario, understanding when and how to use it can significantly improve your software design skills.
+
+## References
+
+1. [Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). Design Patterns: Elements of Reusable Object-Oriented Software.](https://books.google.com.vn/books/about/Design_Patterns.html?id=6oHuKQe3TjQC&redir_esc=y) - Addison-Wesley.
+2. [Freeman, E., Robson, E., Bates, B., & Sierra, K. (2004). Head First Design Patterns.](https://books.google.com.vn/books/about/Head_First_Design_Patterns.html?hl=vi&id=GGpXN9SMELMC&redir_esc=y) - O'Reilly Media.
+3. [Osmani, A. (2017). Learning JavaScript Design Patterns.](https://books.google.com.vn/books/about/Learning_JavaScript_Design_Patterns.html?id=Akq8EAAAQBAJ&redir_esc=y) - O'Reilly Media.
