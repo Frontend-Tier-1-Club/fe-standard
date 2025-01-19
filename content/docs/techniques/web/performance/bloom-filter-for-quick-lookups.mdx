@@ -17,6 +17,8 @@ Let's see some techniques to solve this problem. Each of them both have advantag
 ### 1. **Arrays/ Lists**
 
 An array is a simple data structure but requires O(n) time for lookups unless preprocessed into a sorted or indexed format.
+
+Javascript:
 ```javascript
   const array = [{ name: "Alice", age: 25 }, { name: "Bob", age: 30 }];
 
@@ -26,6 +28,27 @@ An array is a simple data structure but requires O(n) time for lookups unless pr
 
   console.log(arrayLookup("Alice")); // { name: 'Alice', age: 25 }
   console.log(arrayLookup("Charlie")); // No record found for Charlie
+
+```
+
+Typescript:
+```typescript
+type Person = {
+  name: string;
+  age: number;
+};
+
+const array: Person[] = [
+  { name: "Alice", age: 25 },
+  { name: "Bob", age: 30 },
+];
+
+function arrayLookup(name: string): Person | string {
+  return array.find(item => item.name === name) || `No record found for ${name}`;
+}
+
+console.log(arrayLookup("Alice")); // { name: 'Alice', age: 25 }
+console.log(arrayLookup("Charlie")); // No record found for Charlie
 
 ```
 **Complexity Analysis**:
@@ -38,6 +61,8 @@ An array is a simple data structure but requires O(n) time for lookups unless pr
 ### 2. **Hash maps/ Objects**
 
 We store all usernames in a hash set. Hash Map is great for direct key-value lookups with **O(1)** average time complexity.
+
+Javascript:
 ```javascript
   const hashMap = new Map();
   hashMap.set("Alice", { age: 25 });
@@ -46,6 +71,22 @@ We store all usernames in a hash set. Hash Map is great for direct key-value loo
   console.log(hashMap.has("Alice")); // true
   console.log(hashMap.get("Alice")); // { age: 25 }
   console.log(hashMap.has("Charlie")); // false
+```
+
+Typescript:
+```typescript
+  type Person = {
+    age: number;
+  };
+
+  const hashMap: Map<string, Person> = new Map();
+  hashMap.set("Alice", { age: 25 });
+  hashMap.set("Bob", { age: 30 });
+
+  console.log(hashMap.has("Alice")); // true
+  console.log(hashMap.get("Alice")); // { age: 25 }
+  console.log(hashMap.has("Charlie")); // false
+
 ```
 **Complexity Analysis**:
 * Time Complexity:
@@ -58,6 +99,8 @@ We store all usernames in a hash set. Hash Map is great for direct key-value loo
 ### 3. **Tries/ Prefix Trees**
 
 A Trie (also called a Prefix Tree) is a tree-like data structure that is used for storing and retrieving keys efficiently.
+
+Javascript:
 ```javascript
   class TrieNode {
     constructor() {
@@ -145,6 +188,104 @@ A Trie (also called a Prefix Tree) is a tree-like data structure that is used fo
   console.log(trie.startsWith("A")); // true
   console.log(trie.getWordsWithPrefix("Ch")); // ['Charlie']
 ```
+
+Typescript:
+```typescript
+
+class TrieNode {
+  children: { [key: string]: TrieNode }; // Stores child nodes
+  isEndOfWord: boolean; // Marks the end of a word
+
+  constructor() {
+    this.children = {};
+    this.isEndOfWord = false;
+  }
+}
+
+class Trie {
+  root: TrieNode;
+
+  constructor() {
+    this.root = new TrieNode(); // Root node
+  }
+
+  // Insert a word into the Trie
+  insert(word: string): void {
+    let currentNode = this.root;
+    for (const char of word) {
+      if (!currentNode.children[char]) {
+        currentNode.children[char] = new TrieNode();
+      }
+      currentNode = currentNode.children[char];
+    }
+    currentNode.isEndOfWord = true;
+  }
+
+  // Search for a word in the Trie
+  search(word: string): boolean {
+    let currentNode = this.root;
+    for (const char of word) {
+      if (!currentNode.children[char]) {
+        return false; // Word does not exist
+      }
+      currentNode = currentNode.children[char];
+    }
+    return currentNode.isEndOfWord;
+  }
+
+  // Check if any words in the Trie start with a given prefix
+  startsWith(prefix: string): boolean {
+    let currentNode = this.root;
+    for (const char of prefix) {
+      if (!currentNode.children[char]) {
+        return false; // Prefix does not exist
+      }
+      currentNode = currentNode.children[char];
+    }
+    return true; // Prefix exists
+  }
+
+  // Retrieve all words with a given prefix
+  getWordsWithPrefix(prefix: string): string[] {
+    const results: string[] = [];
+    let currentNode = this.root;
+
+    // Traverse to the node representing the last character of the prefix
+    for (const char of prefix) {
+      if (!currentNode.children[char]) {
+        return results; // Prefix does not exist
+      }
+      currentNode = currentNode.children[char];
+    }
+
+    // Perform a DFS to collect all words starting from this node
+    const dfs = (node: TrieNode, path: string) => {
+      if (node.isEndOfWord) {
+        results.push(path);
+      }
+      for (const char in node.children) {
+        dfs(node.children[char], path + char);
+      }
+    };
+
+    dfs(currentNode, prefix);
+    return results;
+  }
+}
+
+// Example Usage
+const trie = new Trie();
+trie.insert("Alice");
+trie.insert("Charlie");
+
+console.log(trie.search("Alice")); // true
+console.log(trie.search("Ali")); // false
+console.log(trie.startsWith("A")); // true
+console.log(trie.getWordsWithPrefix("Ch")); // ['Charlie']
+
+
+```
+
 **Complexity Analysis**:
 * Time Complexity:
 
@@ -169,9 +310,12 @@ A Trie (also called a Prefix Tree) is a tree-like data structure that is used fo
     * **N**: Number of strings in the Trie.
 
 ### Large data problem and why bloom filter
-We can see that traditional data structures like hash tables or Tries can consume a significant amount of memory, especially for large datasets.
-So, this article introduce to you a data structure can work wellin these cases: **Bloom filter**.
+In real-life applications, front-end systems often need to quickly check if a username or email is already registered, while back-end systems might validate the existence of URLs, detect duplicate database entries, or handle large-scale web crawling.
+Traditional data structures like hash tables or tries can consume significant memory when dealing with datasets containing millions or even billions of entries.
 
+For such scenarios, **Bloom filters** provide an efficient alternative. 
+They are a probabilistic data structure that uses significantly less memory to check for membership in a dataset, at the cost of a small false-positive rate. 
+For instance, if you are handling a dataset with hundreds of millions of records (e.g., user data, URLs, or database transactions), Bloom filters can save memory while maintaining high lookup performance.
 ## Bloom filter: Abstract
 A bloom filter is a probabilistic data structure that is based on hashing. It is extremely space efficient and is typically used to add elements to a set and test if an element is in a set. Though, the elements themselves are not added to a set. Instead a hash of the elements is added to the set.
 
@@ -278,6 +422,8 @@ A bloom filter is extremely efficient in both time and space usage.
  
 ## Example 
 Below is example code to implement bloom filter:
+
+Javascript:
 ```javascript
 class BloomFilter {
     /**
@@ -421,6 +567,159 @@ class BloomFilter {
   console.log(bloomFilter.check("grape"));   // false (Definitely)
   console.log(bloomFilter.check("banana"));  // true (Probably)
   console.log(bloomFilter.check("kiwi"));    // false (Definitely)
+```
+
+Typescript:
+```typescript
+  class BloomFilter {
+  private expectedItems: number; // Number of expected items to be added
+  private falsePositiveRate: number; // Desired false positive rate
+  private size: number; // Size of the bit array
+  private hashCount: number; // Number of hash functions
+  private bitArray: number[]; // Bit array to store the filter
+
+  /**
+   * Creates a new Bloom filter.
+   * @param expectedItems - The expected number of items to be added to the filter.
+   * @param falsePositiveRate - The desired false positive rate (e.g., 0.01 for 1%).
+   */
+  constructor(expectedItems: number, falsePositiveRate: number) {
+    this.expectedItems = expectedItems;
+    this.falsePositiveRate = falsePositiveRate;
+
+    // Calculate the size of the bit array (m)
+    this.size = this.getSize(expectedItems, falsePositiveRate);
+
+    // Calculate the optimal number of hash functions (k)
+    this.hashCount = this.getHashCount(this.size, expectedItems);
+
+    // Initialize the bit array with all bits set to 0
+    this.bitArray = new Array(this.size).fill(0);
+  }
+
+  /**
+   * Calculates the size of the bit array (m) based on the expected number of items and the desired false positive rate.
+   * @param n - The expected number of items.
+   * @param p - The desired false positive rate.
+   * @returns The size of the bit array.
+   */
+  private getSize(n: number, p: number): number {
+    const m = -(n * Math.log(p)) / (Math.log(2) ** 2);
+    return Math.ceil(m); // Round up to the nearest integer
+  }
+
+  /**
+   * Calculates the optimal number of hash functions (k) based on the size of the bit array and the expected number of items.
+   * @param m - The size of the bit array.
+   * @param n - The expected number of items.
+   * @returns The optimal number of hash functions.
+   */
+  private getHashCount(m: number, n: number): number {
+    const k = (m / n) * Math.log(2);
+    return Math.ceil(k); // Round up to the nearest integer
+  }
+
+  /**
+   * Adds an item to the Bloom filter.
+   * @param item - The item to add.
+   */
+  public add(item: string): void {
+    for (let i = 0; i < this.hashCount; i++) {
+      const hash = this.murmurhash3_32_gc(item, i) % this.size; // Use MurmurHash3 with different seeds
+      this.bitArray[hash] = 1;
+    }
+  }
+
+  /**
+   * Checks if an item is possibly in the Bloom filter.
+   * @param item - The item to check.
+   * @returns True if the item is probably in the set, false if it's definitely not.
+   */
+  public check(item: string): boolean {
+    for (let i = 0; i < this.hashCount; i++) {
+      const hash = this.murmurhash3_32_gc(item, i) % this.size;
+      if (this.bitArray[hash] === 0) {
+        return false; // Definitely not in the set
+      }
+    }
+    return true; // Probably in the set
+  }
+
+  /**
+   * A basic implementation of MurmurHash3 for 32-bit numbers (for demonstration purposes).
+   * @param key - The input string to hash.
+   * @param seed - The seed for the hash function.
+   * @returns The 32-bit hash value.
+   */
+  private murmurhash3_32_gc(key: string, seed: number): number {
+    let remainder, bytes, h1, h1b, c1, c2, k1, i;
+
+    remainder = key.length & 3; // key.length % 4
+    bytes = key.length - remainder;
+    h1 = seed;
+    c1 = 0xcc9e2d51;
+    c2 = 0x1b873593;
+    i = 0;
+
+    while (i < bytes) {
+      k1 =
+        (key.charCodeAt(i) & 0xff) |
+        ((key.charCodeAt(++i) & 0xff) << 8) |
+        ((key.charCodeAt(++i) & 0xff) << 16) |
+        ((key.charCodeAt(++i) & 0xff) << 24);
+      ++i;
+
+      k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+      k1 = (k1 << 15) | (k1 >>> 17);
+      k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+
+      h1 ^= k1;
+      h1 = (h1 << 13) | (h1 >>> 19);
+      h1b = ((((h1 & 0xffff) * 5) + ((((h1 >>> 16) * 5) & 0xffff) << 16))) & 0xffffffff;
+      h1 = (((h1b & 0xffff) + 0x6b64) + ((((h1b >>> 16) + 0xe654) & 0xffff) << 16));
+    }
+
+    k1 = 0;
+
+    switch (remainder) {
+      case 3:
+        k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+      case 2:
+        k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+      case 1:
+        k1 ^= key.charCodeAt(i) & 0xff;
+        k1 = (((k1 & 0xffff) * c1) + ((((k1 >>> 16) * c1) & 0xffff) << 16)) & 0xffffffff;
+        k1 = (k1 << 15) | (k1 >>> 17);
+        k1 = (((k1 & 0xffff) * c2) + ((((k1 >>> 16) * c2) & 0xffff) << 16)) & 0xffffffff;
+        h1 ^= k1;
+    }
+
+    h1 ^= key.length;
+
+    h1 ^= h1 >>> 16;
+    h1 = (((h1 & 0xffff) * 0x85ebca6b) + ((((h1 >>> 16) * 0x85ebca6b) & 0xffff) << 16)) & 0xffffffff;
+    h1 ^= h1 >>> 13;
+    h1 = ((((h1 & 0xffff) * 0xc2b2ae35) + ((((h1 >>> 16) * 0xc2b2ae35) & 0xffff) << 16)) & 0xffffffff);
+    h1 ^= h1 >>> 16;
+
+    return h1 >>> 0;
+  }
+}
+
+// Example Usage:
+const bloomFilter = new BloomFilter(1000, 0.01); // Expected 1000 items, 1% false positive rate
+
+// Add some items
+bloomFilter.add("apple");
+bloomFilter.add("banana");
+bloomFilter.add("orange");
+
+// Check for membership
+console.log(bloomFilter.check("apple")); // true (Probably)
+console.log(bloomFilter.check("grape")); // false (Definitely)
+console.log(bloomFilter.check("banana")); // true (Probably)
+console.log(bloomFilter.check("kiwi")); // false (Definitely)
+
 ```
 
 ## Application of bloom filter in real life
