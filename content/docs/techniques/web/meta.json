@@ -1,21 +1,21 @@
 {
-    "title": "Web",
-    "description": "The big picture",
-    "icon": "Building2",
-    "pages": [
-      "index",
-      "standard",
-      "build",
-      "css-architecture",
-      "deployment",
-      "package-manager",
-      "performance",
-      "security",
-      "testing",
-      "ui-ux",
-      "seo",
-       "3D",
-       "interview-tips"
-    ]
-  }
-  
+  "title": "Web",
+  "description": "The big picture",
+  "icon": "Building2",
+  "pages": [
+    "index",
+    "standard",
+    "build",
+    "bundler-tool",
+    "css-architecture",
+    "deployment",
+    "package-manager",
+    "performance",
+    "security",
+    "testing",
+    "ui-ux",
+    "seo",
+    "3D",
+    "interview-tips"
+  ]
+}
