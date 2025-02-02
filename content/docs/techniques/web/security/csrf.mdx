@@ -14,6 +14,8 @@ Clicking on these links can unknowingly send requests to the Facebook server, po
 
 ## How does CSRF work ?
 
+![image](/images/javascript/security/csrf-hacking-facebook.png)
+
 For example, you have an API that lets the user change password on their account. When a user performs this action, they will make an HTTP request as shown:
 
 ```
@@ -50,6 +52,10 @@ and change their password
 Attackers could initiate unauthorized money transfers from your bank account or make purchases on.
 your behalf from online stores.
 
+![image](/images/javascript/security/csrf-hacking-bank.png)
+
+There are other viable attacks, not all of them, but you can see them as examples.
+
 <b>Posting unwanted content:</b>
 Attackers could post messages or content on your social media accounts or other online platforms.
 
@@ -75,6 +81,8 @@ In the form on client-side should have a hidden field that holds the value of th
 <input type="hidden" name="csrf-token" value="aTokenThatGeneratedOnServer" />
 ```
 
+![image](/images/javascript/security/csrf-anti-token.png)
+
 <b>SameSite Cookie Attribute:</b>
 This attribute helps the browser decide whether to send cookies along with cross-site requests. The
 values of this attribute are `Lax`, `Strict` or `None`. The `Strict` value will prevent the cookie
@@ -82,10 +90,37 @@ from being sent by the browser to the target site in all cross-site browsing con
 following a regular link. This attribute should not replace a CSRF Token. It should co-exist with
 the token to protect the user like a second layer of defense.
 
+![image](/images/javascript/security/csrf-samesite.png)
+
 <b>Check the Origin and Referrer Headers:</b>
 You need to determine the origin that request is going to/coming from. On server, you need to verify
 if both of them match. If they do, so you can accept the request as ligitimate and if they don't,
 you can discard the request
+
+You can try to add a referer as a header when you send any request
+
+```
+GET /images/secure-image.png HTTP/1.1
+Host: example.com
+Referer: https://example.com/protected-page
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+Accept: image/png,image/*;q=0.8
+```
+
+And on the server you can simply verify the referer with this simple code ( this example using expressjs ).
+
+```
+app.get('/images/:filename', (req, res) => {
+    const referer = req.get('Referer');
+    const allowedOrigin = 'https://example.com';
+
+    if (!referer || !referer.startsWith(allowedOrigin)) {
+        return res.status(403).send('Forbidden: Invalid referer');
+    }
+
+    res.sendFile(`/path/to/images/${req.params.filename}`);
+});
+```
 
 ## If you want to dive deeper on CSRF
 
