@@ -3,266 +3,115 @@ title: Hybrid State Management Strategies
 description: Hybrid State Management Strategies
 ---
 
-## Introduction to Hybrid State
+## Introduction
+
+Modern web applications face a common challenge: balancing performance, interactivity, and scalability when managing state.
+Fetching too much data on the client can lead to sluggish performance, while over-reliance on the server can result in unnecessary network requests and increased latency.
 
 Hybrid state management involves a combination of server state and client state to create efficient, scalable, and performant frontend applications.
 It leverages the strengths of both approaches, ensuring seamless data synchronization and optimal user experiences.
 
-**Client State**
+## Key Components of Hybrid State Management
 
-Client state refers to data that resides on the client side of an application
+**Client-side State**
 
-| **State Type**    | **Scope**                | **Example**                                      |
-| ----------------- | ------------------------ | ------------------------------------------------ |
-| **UI State**      | Localized, per component | Modal open/close, hover state, active tabs       |
-| **Global State**  | Shared across components | User authentication, theme, notifications        |
-| **Derived State** | Calculated, not stored   | Filtered lists, computed totals, isAuthenticated |
+- State that affects UI interactions (e.g., form inputs, modals, local component states).
+- Managed using React hooks (useState, useReducer, useContext) or state libraries like Zustand, Redux, or Jotai.
 
-**Server State**
+This refers to state managed in the browser, typically for interactive elements and real-time updates.
 
-Server state refers to data that come from external source such as an API or database.
-This data is typically changes over times and shared between clients.
+```jsx
+import { useState } from "react"
+
+function ClientState() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+}
+
+export default ClientState
+```
+
+**Server-side State**
+
+- Data fetched from external source such as an API or database.
+
+- Cached and managed on the server.
+
+- Used to improve performance and reduce unnecessary client-side requests.
+
+This data is typically changes over times and shared between clients, often used for initial page loads and SEO-critical content.
+
+**Synchronization Layer**
+
+This is the mechanism that keeps server and client states in sync.
 
 ---
 
-## Key Principles of Performance in Hybrid State Management
+## Benefits of Hybrid State Management
 
-### Minimizing State Redundancy and Overfetching
+**Improved Performance**: By leveraging server-side rendering for initial state and client-side updates for interactivity, applications can achieve faster initial load times and responsive user interfaces .
 
-State redundant and excessive network requests can significantly degrade application performance. Hybrid state management must prioritize strategies that:
+**Enhanced SEO**: Server-rendered content with up-to-date state improves search engine visibility.
 
-- **Avoid Duplicate State**: ensure that the same piece of data is not stored in both server state and client state unless absolutely necessary. Use derived state techniques to compute values dynamically when possible.
-  For example, you can use a selector in a state management library to derive filtered results rather than storing multiple filtered versions of the data.
+**Better User Experience**: Immediate feedback on the client-side combined with consistent server-side state creates a smooth user experience.
 
-```jsx
-function Posts() {
-  const [posts, setPosts] = useState([])
-  // Drived state for liked posts
-  const likedPost = useMemo(() => posts.filter(post => post.liked))
-
-  useEffect(() => {
-    async function fetchPosts() {
-      const res = await fetch("https://some-endpoint/posts")
-      const data = await res.json()
-      setPosts(data)
-    }
-    fetchPosts()
-  }, [])
-
-  return <div>Display Posts, liked posts</div>
-}
-```
-
-- **Leverage Cache for Server State**: using caching mechanisms (e.g., React Query or SWR) to reduce the frequency of fetching data from the server. Proper cache configuration can minimize server load and improve user experience.
-  For example, React Query's `useQuery` hook allows you to set a stale time, ensuring that data is fetched only when it becomes outdated, reducing unnecessary network calls.
-
-- **Optimize Fetching Strategies**: employ techniques such as conditional fetching, polling with exponential backoff, and stale-while-revalidate to fetch only what is needed, when it is needed.
-  `React query` provides these strategies, allowing you to customize data fetching strategies based on your application's requirements.
-
-- **Normalize Data Structures**: maintain a normalized structure for client state to make updates more simpler and efficient.
-
-```jsx
-// The post data received from the API
-const state = {
-  posts: [
-    {
-      id: 1,
-      title: "Post 1",
-      content: "This is post 1",
-      user: {
-        id: 1,
-        name: "Frank 1"
-      }
-    },
-    {
-      id: 2,
-      title: "Post 2",
-      content: "This is post 2",
-      user: {
-        id: 2,
-        name: "Frank 2"
-      }
-    }
-  ]
-}
-
-// Normalized state structure
-const normalizedState = {
-  posts: {
-    byId: {
-      1: { id: 1, title: "Post 1", content: "This is post 1", userId: 1 },
-      2: { id: 2, title: "Post 2", content: "This is post 2", userId: 2 }
-    },
-    allIds: [1, 2]
-  },
-  users: {
-    byId: {
-      1: { id: 1, name: "Frank 1" },
-      2: { id: 2, name: "Frank 2" }
-    },
-    allIds: [1, 2]
-  }
-}
-```
-
-### Reducing UI Renders Complexity by Efficient State Structure
-
-Frequent and unnecessary UI renders can lead to poor performance and a suboptimal user experience. To address this:
-
-- **Split State Appropriately**: Separate states based on their usage and impact to avoid updating unrelated components.
-  Using `useState` for managing a dropdown's open/close state while using a global context for user authentication status.
-- **Selective Rendering:** Use techniques like React's `memo` or `useMemo` to prevent rerenders for components whose props or state haven’t changed.
-  For instance, wrap a list item component with `memo` so that it only rerenders when its specific data changes.
-- **Batch State Updates**: Group related state updates into a single operation to minimize renders.
-
-  ```tsx
-  type UserData = {
-    name: string
-    email: string
-  }
-
-  function UpdateUserInfo({ id }: { id: string }) {
-    const [formState, setFormState] = useState<UserData>()
-
-    useEffect(() => {
-      async function fetchUser(id: string) {
-        const res = await fetch(`https://some-endpoint/users/${id}`)
-        const data = (await res.json()) as UserData
-        setFormState(data)
-      }
-      fetchUser(id)
-    }, [id])
-
-    const handleInfoChange = (key: typeof UserData, value: string) => {
-      // Batch state updates by merging changes into the single state object
-      setFormState(prev => ({
-        ...prev,
-        [field]: value
-      }))
-    }
-
-    const handleSubmit = () => {
-      console.log("Submit:", formState)
-    }
-
-    return (
-      <div>
-        <input
-          type="text"
-          placeholder="Name"
-          value={formState.name}
-          onChange={e => handleInputChange("name", e.target.value)}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={formState.email}
-          onChange={e => handleInputChange("email", e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={formState.password}
-          onChange={e => handleInputChange("password", e.target.value)}
-        />
-        <button onClick={handleSubmit}>Submit</button>
-      </div>
-    )
-  }
-  ```
-
-  Instead of separate each input value into individual state, all fields (name, email, and password) are stored in a single state object.
-
-- **Efficient List Rendering**: For large lists, implement virtualization (e.g., react-window, react-virtualized) to only render items visible in the viewport.
+**Scalability**: Hybrid approaches can better handle large amounts of data and complex state logic by distributing the load between server and client.
 
 ---
 
-### Managing Local and Global State
+## Strategies to Identify Server State or Client State
 
-- Use Local State for Component-Specific Data
-- Leverage React Context Sparingly
-- Split State Across Components
+To determine whether a piece of state should be managed on the server or client, consider these key questions:
 
-### Minimizing Re-renders and Optimizing Component Rendering
+### Does the data need to be available on the initial page load?
 
-- Split State Across Components
-- Use Memoization for Expensive Computations
-- 
+If the data is required as soon as the user lands on the page, such as user authentication status or initial dashboard analytics, it should be fetched from the server state.
+This ensures that the page is preloaded with the required data, improving perceived performance and user experience.
 
-### Consider Server-Side Rendering
+If the data is only needed after a user interacts with the page (e.g., toggling a setting or entering an input), it can be stored in client state to avoid unnecessary API calls.
 
-Server-Side Rendering (SSR) is a technique where an application's HTML is generated on the server and sent to the client, rather than relying on client-side JavaScript to render the UI.
-Use frameworks like Next.js for server-side rendering to boost initial page load speed. Using SSR can reduce state management on the client, make it more simpler to handle.
+### Is the data frequently changing for a single user?
 
-**Initial State Hydration**
+State that frequently changes in response to user actions (e.g., form inputs, toggles, filters) should be handled as client state to avoid excessive API requests and unnecessary re-renders.
 
-In SSR, the server renders the initial HTML and often provides a serialized version of the initial application state. This state is sent to the client and "hydrated" to make the application interactive.
+On the other hand, data that remains relatively static, such as product lists or user profiles, can be fetched from the server state and cached to minimize redundant API calls.
 
-The hydration process involves attaching event listeners to the already-rendered HTML on the client.
+### Does the data need to persist across page reloads or be globally shared?
 
-**Data Fetching and Preloading**
+If a piece of state needs to be available across multiple pages or after a user reloads the page, it should be managed as server state.
+This ensures that the state is consistent and accessible whenever needed.
 
-The server must fetch and preload all necessary data before rendering the application.
-This data is included in the HTML payload sent to the client, so the client has all the required information without additional requests.
+For example, authentication tokens, user settings, and dashboard data should persist across page reloads, making server state the ideal choice.
+In contrast, temporary UI interactions like dropdown selections or modals can be handled as client state.
 
-**Benefits of SSR for State Management**
+### Does the state directly impact UI interactivity (e.g., toggles, dropdowns)?
 
-1. Improved Performance
+State that directly affects the UI, such as theme preferences, form inputs, or navigation state, is best managed as client state.
+This ensures a smooth and responsive user experience without unnecessary network requests.
 
-- The server renders the initial HTML, allowing the user to see content faster, even before JavaScript is fully loaded.
-- Reduces the time to the first meaningful paint
+For example, a dark mode toggle should be handled entirely in client state because there is no need to fetch it from the server every time the user interacts with the page.
+However, if theme preferences should persist across sessions, the state should be stored in local storage or updated on the server.
 
-2. SEO Optimization
+### Does the data require real-time synchronization across multiple clients?
 
-- Search engines can crawl and index the fully rendered HTML, improving search engine rankings.
+Some applications, such as collaborative tools or chat applications, require real-time data updates across multiple users.
+In such cases, a hybrid approach using client state for local responsiveness and server state for real-time updates via WebSockets or polling is the best approach.
 
-3. Initial State Consistency
+For instance, a live chat feature can store the currently typed message in client state while fetching new messages from the server state using WebSockets.
 
-- The server provides a consistent initial state, reducing the risk of mismatch between the server-rendered HTML and the client-rendered React tree.
+## Hybrid State Management Techniques
 
-```jsx
-// A Server Component
-export default async function PostsPage() {
-  const posts = await fetchPosts() // Fetch data on the server
-  return (
-    <div>
-      <h1>Posts</h1>
-      <ul>
-        {posts.map(post => (
-          <li key={post.id}>
-            <strong>{post.title}</strong>
-            <p>{post.body}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
+### Server-Side Rendering with Client-Side Hydration
 
-async function fetchPosts() {
-  const response = await fetch("https://example.com/posts")
-  return response.json()
-}
-```
+### Prefetch and Cache Data with React Query
 
-This is an example of server component using **Next.js 14**. In this component, no client-side JavaScript is needed for this page, improving performance and reducing bunlde size.
+- Uses background refetching to keep data fresh.
+- Reduces redundant requests by caching API responses.
 
----
+### Context for Dependency Injection
 
-## Best Practices for Hybrid State Management
-
-### Leverage Zustand with Context API
-
-- Use Zustand + Context to provide a way to create initial data without render
-
-### State Synchronization Between Server and Client with Zustand
-
-### Zustand with React Query
-
-- Optimistic update: Zustand + React Query
+## Example
 
 ## Conclusion
 
 ## References
-
-https://tkdodo.eu/blog/zustand-and-react-context
