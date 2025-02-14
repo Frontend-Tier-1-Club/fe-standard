@@ -6,30 +6,415 @@ preview: "Yarn"
 
 ## Yarn's Evolution Overview
 
+### Yarn Classic
+
+Introduced by Facebook in 2016, Yarn aimed to solve some of the issues developers experienced with NPM.
+NPM’s early versions lacked key features like lockfiles, which made dependency resolution inconsistent.
+Yarn addressed these issues by ensuring that package versions and installation processes were predictable, especially in large teams where consistency matters.
+
+It focuses on speed, security, and reliability, introducing features like offline caching and deterministic installs (ensuring the same package versions are installed across machines).
+
+**Key Features:**
+
+- **Faster installs:** Yarn introduced parallel package downloads, reducing installation times.
+- **Deterministic lockfiles:** The `yarn.lock` file ensures that the same dependencies are installed across all environments.
+- **Offline support:** Yarn can cache packages, allowing offline installation.
+
+### Yarn Berry (Yarn 2+ or Yarn Modern)
+
+Yarn Berry, also known as Yarn 2 or Yarn Modern, represents a significant overhaul from Yarn Classic (Yarn 1), bringing improved performance, better workspace management, and a variety of new features.
+Yarn Berry emphasizes security, performance, and modern workflows, particularly for larger projects and monorepos.
+
+**This Documentation will focus on Yarn Berry**
+
+**Key Features:**
+
+- **Zero-Installs:** Yarn Berry enables you to store dependencies in the .yarn/cache folder, which is committed to the repository, so you can clone the repository and start coding without running yarn install.
+- **PnP (Plug’n’Play):** This feature removes the need for `node_modules`, reducing disk space usage and improving speed by resolving dependencies directly.
+- **Better workspace management:** It handles monorepos more efficiently, with advanced workspace linking and dependency hoisting.
+- **Improved plugin architecture:** With Yarn Berry, you can extend and customize the behavior by using or writing plugins.
+- **Yarn Constraints:** You can define project-wide rules and ensure your code follows specific standards, improving overall consistency.
+
+**CLI commands:**
+
+- **Install dependencies:** `yarn install`.
+- **Add package:** `yarn add <package>`.
+- **Remove package:** `yarn remove <package>`.
+- **Run scripts:** `yarn run <script>`.
+- **Zero-installs setup:** `Committing the `.yarn/cache` folder allows you to clone and run the project without needing to reinstall dependencies.
+
+**Key Command Differences in Yarn Berry:**
+
+- **Yarn dlx:** Replaces `npx` to run one-off commands from the registry.
+- **Immutable installs:** Ensures the lockfile is not updated, improving reproducibility across environments (`yarn install --immutable`).
+- **Upgrade interactive:** Allows you to upgrade dependencies in an interactive UI (`yarn upgrade-interactive`).
+
 ## General Architecture
+
+Yarn works through a core package (published as `@yarnpkg/core`) that exposes the various base components that make up a project.
+
+The core itself doesn't do much - it merely contains the logic required to manage a project.
+In order to use this logic from the command-line Yarn provides an indirection called @yarnpkg/cli which has two very important responsibilities: it hydrates a project instance based on the current directory (cwd), and inject the prebuilt Yarn plugins into the environment.
+
+Yarn is built in modular way that allow most of the business logic related to third-party interactions to be externalized inside their own package.
+This design gives us a much simpler codebase to work with (hence an increased development speed and stabler product), and offers plugin authors the ability to write their own external logic without having to modify the Yarn codebase itself.
 
 ## Features
 
 ### Install modes
 
-1. nodeLinker: pnpm
-2. nodeLinker: node_modules
-3. nodeLinker: pnp (Plug'n'Play - focus)
+1. nodeLinker: `pnpm`
+
+   Under this mode, a flat folder is generated in `node_modules/.store` containing one folder for each dependency in the project.
+
+   Each dependency folder is populated with hardlinks obtained from a central store common to all projects on the system (by default `$HOME/.yarn/berry/index`).
+   Finally, symlinks to the relevant folders from the flat store are placed into the node_modules folders.
+
+   | Pros                                     | Cons                                      |
+   | ---------------------------------------- | ----------------------------------------- |
+   | Slower than `PnP`, but still very fast   | Symlinks aren't always supported by tools |
+   | Content-addressable store                | Hard links can lead to strange behaviors  |
+   | Protects against some ghost dependencies | Generic dependency errors                 |
+   | No need for IDE SDKs                     | Sometimes requires `packageExtensions`    |
+
+2. nodeLinker: `node_modules`
+   This mode is the old tried and true way to install Node.js projects, supported natively by Node.js and virtually the entirety of the JavaScript ecosystem.
+
+   While `pnp` and `pnpm` are more highly recommended, `node_modules` remains a solid option to problems with dependencies that you don't have the time to address immediately.
+   Although this may make your project a little more unstable because ghost dependencies may unexpectedly creep in, it may be a reasonable trade-off depending on the circumstances.
+
+   | Pros                                           | Cons                                              |
+   | ---------------------------------------------- | ------------------------------------------------- |
+   | Perfect compatibility with the whole ecosystem | Average speed                                     |
+   | Optional support for hardlinks (`nmMode`)      | No protection against ghost dependencies          |
+   | No need for IDE SDKs                           | Imperfect hoisting due to the filesystem reliance |
+
+3. nodeLinker: `pnp` (Plug'n'Play)
+
+   Yarn Plug'n'Play (generally referred to as Yarn PnP) is the default installation strategy in modern releases of Yarn since 2019, and the compatibility story significantly improved along the years as we worked with tooling authors to smoothen the edges
+
+   No more `node_modules`, It tells Yarn to generate a single Node.js loader file in place of the typical `node_modules` folder.
+   This loader file, named `.pnp.cjs`, contains all information about your project's dependency tree, informing your tools as to the location of the packages on the disk and letting them know how to resolve require and import calls.
+
+   > Yarn Plug'n'Play basically generates a single Node.js loader file for each of your projects, which makes your tools directly access packages from a global store on your disk. No need for file copies, or even symlinks / hardlinks.
+
+**Advantages:**
+
+1.  **Minimal install footprint**
+
+    A Yarn PnP install typically does one thing: generate the Node.js loader file (`.pnp.cjs`), saving a large proportion of time on performing I/O operations to copy files from one location to another, be it on disk like npm, or via symlinks / hardlinks like pnpm.
+
+2.  **Shared installs across disks**
+
+    Yarn PnP allows to reuse the same package artifacts across all projects on the disk.
+    The PnP loader directly references packages via their cache path, removing a lot of complexity.
+
+3.  **Perfect and correct hoisting**
+
+    Typical `node_modules` installs attempt to optimize the resulting node_modules size by hoisting packages, at the cost of higher risks of ghost dependencies.
+    Unfortunately, even these optimizations have limits! Some dependency patterns prevent safe hoisting, leading to package duplication and multiple instantiations.
+
+4.  **Ghost dependencies protection**
+
+    Because Yarn keeps a list of all packages and their dependencies, it can prevent accesses to dependencies unaccounted for during resolution,
+    giving you the ability to quickly identify and fix those problems before they get deep into your codebase and jeopardize the stability of your application at deploy time.
+
+5.  **Semantic erroring**
+
+    Yarn PnP not only tells you exactly what the problem is, but also which packages are involved. For example, the two following error messages may be emitted depending on the circumstances:
+
+    ```c
+    Error: Your application tried to access not-found, but it isn't declared in your dependencies; this makes the require call ambiguous and unsound.
+
+    Required package: not-found
+    Required by: /path/to/my-project/
+    ```
+
+    ```c
+    Error: awesome-plugin tried to access awesome-core (a peer dependency) but it isn't provided by its ancestors; this makes the require call ambiguous and unsound.
+
+    Required package: awesome-plugin
+    Required by: awesome-core
+
+    Ancestor breaking the chain: awesome-template
+    ```
+
+    | Pros                                | Cons                                  |
+    | ----------------------------------- | ------------------------------------- |
+    | Extremely fast                      | Less idiomatic                        |
+    | Content-addressable store           | IDE integrations often require `SDKs` |
+    | Protects against ghost dependencies | Sometimes requires packageExtensions  |
+    | Semantic dependency errors          |                                       |
+    | Perfect hoisting optimizations      |                                       |
+    | Provides a dependency tree API      |                                       |
+    | Can be upgraded into zero-installs  |                                       |
 
 ### Security
 
-1. Hardened Mode
-2. Audits
+1. **Hardened Mode**
+
+   Under this mode, Yarn will automatically enable the `--check-resolutions` and `--refresh-lockfile` flags when running `yarn install`,
+   which should protect you against most attacks caused by lockfile poisoning, at the cost of a little bit of install speed.
+
+   The hardened mode can be set (or disabled) using either the enableHardenedMode setting or by defining `YARN_ENABLE_HARDENED_MODE=1|0` in your environment variables.
+
+2. **Audits**
+
+   Yarn doesn't run audits by default when running `yarn install`, as this should rather be performed in a cron task.
+   You can however perform audits whenever you want by running `yarn npm audit`.
+
+   `yarn npm audit`, by default, only applies on the direct dependencies from the current workspace.
+   To get a report on the whole project, use `-A, --all` and/or `-R, --recursive` flags
 
 ## Plugins
 
+Plugins are scripts that get loaded at runtime by Yarn, and that can inject new behaviors into it.
+They also can require some packages provided by Yarn itself, such as `@yarnpkg/core`.
+This allows you to use the exact same core API as the Yarn binary currently in use, kinda like if it was a peer dependency!
+
+> it's strongly advised to write your plugins in such a way that they work without dependencies.
+> We provide a powerful tool (`@yarnpkg/builder` that can bundle your plugins into a single Javascript file, ready to be published.
+
+### Plugin examples
+
+Open in a text editor a new file called `plugin-hello-world.js`, and type the following code:
+
+```c
+module.exports = {
+  name: `plugin-hello-world`,
+  factory: require => ({
+    // What is this `require` function, you ask? It's a `require`
+    // implementation provided by Yarn core that allows you to
+    // access various packages (such as @yarnpkg/core) without
+    // having to list them in your own dependencies - hence
+    // lowering your plugin bundle size, and making sure that
+    // you'll use the exact same core modules as the rest of the
+    // application.
+    //
+    // Of course, the regular `require` implementation remains
+    // available, so feel free to use the `require` you need for
+    // your use case!
+  })
+};
+```
+
+To use it, we need to register it by adding an entry within the `.yarnrc.yml` file at the root of the repository:
+
+```c
+plugins:
+  - ./plugin-hello-world.js
+```
+
+### Adding commands
+
+Plugins can also register their own commands.
+To do this, we just have to write them using the `clipanion` library - and we don't even have to add it to our dependencies:
+
+```c
+module.exports = {
+  name: `plugin-hello-world`,
+  factory: require => {
+    const {BaseCommand} = require(`@yarnpkg/cli`);
+
+    class HelloWorldCommand extends BaseCommand {
+      static paths = [[`hello`]];
+
+      async execute() {
+        this.context.stdout.write(`This is my very own plugin 😎\n`);
+      }
+    }
+
+    return {
+      commands: [
+        HelloWorldCommand,
+      ],
+    };
+  }
+};
+```
+
+### Using hooks
+
+Plugins can register to various events in the Yarn lifetime, and provide them additional information to alter their behavior.
+
+To do this, you just need to declare a new hooks property in your plugin and add members for each hook you want to listen to:
+
+```c
+module.exports = {
+  name: `plugin-hello-world`,
+  factory: require => ({
+    hooks: {
+      setupScriptEnvironment(project, scriptEnv) {
+        scriptEnv.HELLO_WORLD = `my first plugin!`;
+      },
+    },
+  })
+};
+```
+
+Now, each time you'll run a script, you'll see that your env will contain a new value called `HELLO_WORLD!`
+
 ## Lifecycle Scripts
+
+- `prepack` and `postpack`: Those script are called right at the beginning and the end of each call to `yarn pack`.
+  They are respectively meant to turn your package from development into production, and cleanup any lingering artifact
+- `prepublish`: This script is called before `yarn npm publish` before the package has even been packed.
+  This is the place where you'll want to check that the project is in an ok state.
+- `postinstall`: This script is called after the package dependency tree changed in any way -- usually after a dependency (or transitive dependency) got added, removed, or updated,
+  but also sometimes when the project configuration or environment changed (for example when changing the Node.js version).
+
+### Environment variables
+
+When running scripts and binaries, some environment variables are usually made available:
+
+| Variable               | Description                                                                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `$INIT_CWD`            | Directory from which the script has been invoked. This isn't the same as the cwd, which for scripts is always equal to the closest package root. |
+| `$PROJECT_CWD`         | Root of the project on the filesystem.                                                                                                           |
+| `$npm_package_name`    | Name of the running package.                                                                                                                     |
+| `$npm_package_version` | Version of the running package.                                                                                                                  |
+| `$npm_package_json`    | Absolute path to the package.json of the running package.                                                                                        |
+| `$npm_execpath`        | Absolute path to the Yarn binary.                                                                                                                |
+| `$npm_node_execpath`   | Absolute path to the Node binary.                                                                                                                |
+| `$npm_lifecycle_event` | Name of the script or lifecycle event, if relevant                                                                                               |
 
 ## Use cases
 
 ### Monolith
 
+A Monolith is a single, self-contained software application or system containing all the necessary code and data to perform its functions.
+
+1. **Manage Dependency effective with PnP (Plug'n'Play)**
+
+   - Eliminate `node_modules` to improve installation speed and reduce project size.
+
+   - Accelerate project startup by removing the need to resolve modules from `node_modules`
+
+   Here is the project structure when using `Yarn Berry`:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_install.png"
+     alt="yarn_monolith_structure"
+   />
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_monolith_structure.png"
+     alt="yarn_monolith_structure"
+     width="300"
+   />
+
+2. **Caching and boosting installation setup**
+
+   - With `enableGlobalCache: true`, `Yarn Berry` will save all dependencies in globally in cache (`~/.yarn/cache`) in the format `.zip`. This will help us to instantly setup the project and no need to save a copy of `node_modules` for each project
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_cache_globally.png"
+     alt="yarn_cache_globally"
+   />
+
+3. **Improve consistency with immutable install**
+
+   - Yarn Berry can help increase the consistency of dependencies by using `yarn install --immutable`
+
+   - For example, when there is a difference between your `package.json` file and `yarn.lock` (react version 18 and 19), the installation will be failed and shows a warning like this:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_immutable_installation.png"
+     alt="yarn_immutable_installation"
+   />
+
+4. **Zero-Install**
+
+   - Yarn Berry support commit cache into repo (`yarn/cache`), which make installation setup very fast because we no longer need to load dependencies from registry
+
+   - To use this, we need to config `enableGlobalCache: false` in `.yarnrc.yml` file
+
+   - The clear cache and reinstall, file `cache` will appear in folder `.yarn` containing all dependencies of your project:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_cache_locally.png"
+     alt="yarn_cache_locally"
+   />
+
 ### Monorepo
+
+A Mono Repo is a software development practice where all the source code for multiple projects or components of a software application is stored in a single, unified version control repository.
+In a monorepo, code for different services, libraries, or modules is organized and managed together rather than split into separate repositories as in a traditional multi-repo setup.
+This approach can simplify code sharing, version control, and dependency management across the various parts of a software project.
+
+1. **Cross-reference**
+
+   - Packages from monorepos often need to depend on each other - for example when you have an app package depending on a separate library.
+     Yarn makes it very easy thanks to the special `workspace:` protocol, which lets you instruct Yarn to resolve the dependency using the workspace of the same name in the project. For example:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_cross_reference.png"
+     alt="yarn_cross_reference"
+   />
+
+2. **Workspaces - Multiple packages management**
+
+   - Yarn berry has `build-in workspaces`, which help managing multiple packages more easily
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_monorepo_structure.png"
+     alt="yarn_monorepo_structure"
+     width="500"
+   />
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_workspaces_alias.png"
+     alt="yarn_workspaces_alias"
+     width="500"
+   />
+
+3. **Parallel and specific execution and**
+
+   - Scripts from multiple workspaces can be run in parallel if they share the same name, by using yarn workspaces foreach.
+   - For example: `yarn workspaces foreach --all -pt run build` can help run the `build` script for all the workspaces
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_build_foreach.png"
+     alt="yarn_build_foreach"
+     width="500"
+   />
+
+   - `yarn workspace <workspace-name> run <script-name>` can run the script for a specific workspaces:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_build_specific.png"
+     alt="yarn_build_specific"
+     width="500"
+   />
+
+4. **Global scripts**
+
+   - Creating global scripts that can be run from any where of the project:
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_global_script.png"
+     alt="yarn_global_script"
+     width="500"
+   />
+
+5. **Focused installation**
+
+   - A common concern when discovering workspaces is how you need to install all of their dependencies whenever you wish to work on a single one of them. Yarn provides a solution via `yarn workspaces focus`.
+
+   <img
+     className="rounder-md"
+     src="/images/package-manager/yarn_focused_installation.png"
+     alt="yarn_focused_installation"
+   />
 
 ## More about Yarn
 
