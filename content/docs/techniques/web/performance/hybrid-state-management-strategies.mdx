@@ -3,64 +3,115 @@ title: Hybrid State Management Strategies
 description: Hybrid State Management Strategies
 ---
 
-## Introduction to Hybrid State
+## Introduction
 
-What is Hybrid State?
+Modern web applications face a common challenge: balancing performance, interactivity, and scalability when managing state.
+Fetching too much data on the client can lead to sluggish performance, while over-reliance on the server can result in unnecessary network requests and increased latency.
 
-State Types
+Hybrid state management involves a combination of server state and client state to create efficient, scalable, and performant frontend applications.
+It leverages the strengths of both approaches, ensuring seamless data synchronization and optimal user experiences.
 
-- UI state
-- Global state
-- Derived state
+## Key Components of Hybrid State Management
 
-Transient vs Persistent State
+**Client-side State**
+
+- State that affects UI interactions (e.g., form inputs, modals, local component states).
+- Managed using React hooks (useState, useReducer, useContext) or state libraries like Zustand, Redux, or Jotai.
+
+This refers to state managed in the browser, typically for interactive elements and real-time updates.
+
+```jsx
+import { useState } from "react"
+
+function ClientState() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+}
+
+export default ClientState
+```
+
+**Server-side State**
+
+- Data fetched from external source such as an API or database.
+
+- Cached and managed on the server.
+
+- Used to improve performance and reduce unnecessary client-side requests.
+
+This data is typically changes over times and shared between clients, often used for initial page loads and SEO-critical content.
+
+**Synchronization Layer**
+
+This is the mechanism that keeps server and client states in sync.
+
+---
+
+## Benefits of Hybrid State Management
+
+**Improved Performance**: By leveraging server-side rendering for initial state and client-side updates for interactivity, applications can achieve faster initial load times and responsive user interfaces .
+
+**Enhanced SEO**: Server-rendered content with up-to-date state improves search engine visibility.
+
+**Better User Experience**: Immediate feedback on the client-side combined with consistent server-side state creates a smooth user experience.
+
+**Scalability**: Hybrid approaches can better handle large amounts of data and complex state logic by distributing the load between server and client.
 
 ---
 
-## Key Principles of Performance in Hybrid State Management
+## Strategies to Identify Server State or Client State
 
-Minimizing State Redundancy and Overfetching
-Reducing UI Renders by Efficient State Handling
-Ensuring Smooth Data Flow Between Local and Global State
+To determine whether a piece of state should be managed on the server or client, consider these key questions:
 
----
+### Does the data need to be available on the initial page load?
 
-## State Management Strategies
+If the data is required as soon as the user lands on the page, such as user authentication status or initial dashboard analytics, it should be fetched from the server state.
+This ensures that the page is preloaded with the required data, improving perceived performance and user experience.
 
-### Managing Local and Global State
+If the data is only needed after a user interacts with the page (e.g., toggling a setting or entering an input), it can be stored in client state to avoid unnecessary API calls.
 
-- Use Local State for Component-Specific Data
-- Leverage React Context Sparingly
-- Split State Across Components
+### Is the data frequently changing for a single user?
 
-### Minimizing Re-renders and Optimizing Component Rendering
+State that frequently changes in response to user actions (e.g., form inputs, toggles, filters) should be handled as client state to avoid excessive API requests and unnecessary re-renders.
 
-- Memoize Components and Hooks
-- Optimize Rendering Performance
-- Identifying and Preventing Unnecessary Re-renders
+On the other hand, data that remains relatively static, such as product lists or user profiles, can be fetched from the server state and cached to minimize redundant API calls.
 
-### Consider Server-Side Rendering
+### Does the data need to persist across page reloads or be globally shared?
 
-- SSR and Hydration
-- State management on the server
+If a piece of state needs to be available across multiple pages or after a user reloads the page, it should be managed as server state.
+This ensures that the state is consistent and accessible whenever needed.
 
----
+For example, authentication tokens, user settings, and dashboard data should persist across page reloads, making server state the ideal choice.
+In contrast, temporary UI interactions like dropdown selections or modals can be handled as client state.
 
-## Best Practices
+### Does the state directly impact UI interactivity (e.g., toggles, dropdowns)?
 
-### State Management Strategy
+State that directly affects the UI, such as theme preferences, form inputs, or navigation state, is best managed as client state.
+This ensures a smooth and responsive user experience without unnecessary network requests.
 
-- Define State Boundaries
-- State Management Libraries
+For example, a dark mode toggle should be handled entirely in client state because there is no need to fetch it from the server every time the user interacts with the page.
+However, if theme preferences should persist across sessions, the state should be stored in local storage or updated on the server.
 
-### Monitor and Optimize Performance
+### Does the data require real-time synchronization across multiple clients?
 
-- React Developer Tools
-- Profiling
+Some applications, such as collaborative tools or chat applications, require real-time data updates across multiple users.
+In such cases, a hybrid approach using client state for local responsiveness and server state for real-time updates via WebSockets or polling is the best approach.
 
----
+For instance, a live chat feature can store the currently typed message in client state while fetching new messages from the server state using WebSockets.
+
+## Hybrid State Management Techniques
+
+### Server-Side Rendering with Client-Side Hydration
+
+### Prefetch and Cache Data with React Query
+
+- Uses background refetching to keep data fresh.
+- Reduces redundant requests by caching API responses.
+
+### Context for Dependency Injection
+
+## Example
 
 ## Conclusion
 
-Recap
-Performance Best Practices
+## References
